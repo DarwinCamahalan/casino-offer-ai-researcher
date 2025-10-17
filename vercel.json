@@ -3,9 +3,5 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "OPENAI_API_KEY": "@openai-api-key",
-    "XANO_API_URL": "@xano-api-url"
-  }
+  "regions": ["iad1"]
 }
