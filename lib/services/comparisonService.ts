@@ -53,17 +53,30 @@ export function compareOffers(
 ): OfferComparison[] {
   const comparisons: OfferComparison[] = [];
 
+  console.log(`\n=== OFFER COMPARISON DEBUG ===`);
+  console.log(`Discovered offers: ${discoveredOffers.length}`);
+  console.log(`Existing offers: ${existingOffers.length}`);
+
   // Create a map of existing offers by casino and state
   const existingOffersMap = new Map<string, PromotionalOffer>();
   existingOffers.forEach((offer) => {
     const key = normalizeCasinoName(offer.casino_name, offer.state);
     existingOffersMap.set(key, offer);
+    console.log(`Existing: "${offer.casino_name}" (${offer.state}) -> key: "${key}"`);
   });
+
+  console.log(`\nExisting offers map keys:`, Array.from(existingOffersMap.keys()));
 
   // Compare each discovered offer
   discoveredOffers.forEach((discovered) => {
     const key = normalizeCasinoName(discovered.casino_name, discovered.state);
     const existing = existingOffersMap.get(key);
+    
+    console.log(`\nDiscovered: "${discovered.casino_name}" (${discovered.state}) -> key: "${key}"`);
+    console.log(`  Match found: ${existing ? 'YES' : 'NO'}`);
+    if (existing) {
+      console.log(`  Existing offer: ${formatOfferSummary(existing)}`);
+    }
 
     if (!existing) {
       // This is a new offer for a casino
@@ -94,6 +107,9 @@ export function compareOffers(
       }
     }
   });
+
+  console.log(`\nTotal comparisons generated: ${comparisons.length}`);
+  console.log(`=== END COMPARISON DEBUG ===\n`);
 
   return comparisons;
 }

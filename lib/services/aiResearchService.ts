@@ -17,10 +17,19 @@ const openai = new OpenAI({
 
 /**
  * Discover licensed casinos in a specific state using AI research
+ * @param state - The US state to research
+ * @param excludeCasinoWebsites - Array of casino websites to exclude from results (already researched)
  */
-export async function discoverCasinosInState(state: USState): Promise<Casino[]> {
+export async function discoverCasinosInState(
+  state: USState,
+  excludeCasinoWebsites: string[] = []
+): Promise<Casino[]> {
   const regulatorySource = REGULATORY_SOURCES.find((s) => s.state === state);
   const stateName = STATE_NAMES[state];
+
+  const excludeSection = excludeCasinoWebsites.length > 0
+    ? `\n8. EXCLUDE these casinos (already researched):\n${excludeCasinoWebsites.map(w => `   - ${w}`).join('\n')}`
+    : '';
 
   const prompt = `You are a research assistant specializing in US gaming regulations.
 
@@ -31,12 +40,16 @@ Research Requirements:
 2. Use official sources: ${regulatorySource?.commission_name} (${regulatorySource?.website})
 3. Include online casinos, mobile casinos, and casino apps
 4. Verify each casino is currently operational
+5. CRITICAL: Only include casinos with REAL, ACCESSIBLE websites that are currently live and operational
+6. Verify website URLs are legitimate and functioning (not placeholder or test sites)
+7. Exclude any casinos with unavailable, suspended, or non-functional websites${excludeSection}
 
 For each casino found, provide:
 - Exact casino name
 - License status (active/operational)
-- Official website URL if available
+- Official website URL (MUST be accessible and legitimate)
 - Parent company or brand (if known)
+- Actual license number (do NOT make up placeholder licenses)
 
 Output Format: Return ONLY a valid JSON array of casinos with this exact structure:
 [
@@ -44,8 +57,8 @@ Output Format: Return ONLY a valid JSON array of casinos with this exact structu
     "name": "Casino Name",
     "state": "${state}",
     "is_operational": true,
-    "license_number": "LIC-123 (if available)",
-    "website": "https://casino-site.com (if available)",
+    "license_number": "actual-license-number (ONLY if you have the real license, otherwise omit this field)",
+    "website": "https://casino-site.com (ONLY include if website is verified accessible)",
     "brand": "Parent Company (if known)"
   }
 ]
@@ -53,7 +66,9 @@ Output Format: Return ONLY a valid JSON array of casinos with this exact structu
 Important: 
 - Return ONLY the JSON array, no additional text
 - Include every licensed casino you can find
-- If information is unavailable, omit that field
+- If you don't have the REAL license number, DO NOT include the license_number field
+- Only include websites you can verify are legitimate and operational
+- Do NOT include placeholder data like "LIC-0001", "LIC-0002", etc.
 - Do NOT include sports betting operators unless they also offer casino games`;
 
   try {
@@ -81,8 +96,18 @@ Important:
     // Parse the JSON response
     const casinos = parseJSONResponse<Casino[]>(content);
     
+    // Filter out any casinos that match excluded websites (additional safety check)
+    const filteredCasinos = casinos.filter(casino => {
+      if (!casino.website) return true;
+      const normalizedWebsite = casino.website.toLowerCase().replace(/^https?:\/\//i, '').replace(/\/$/, '');
+      return !excludeCasinoWebsites.some(excluded => {
+        const normalizedExcluded = excluded.toLowerCase().replace(/^https?:\/\//i, '').replace(/\/$/, '');
+        return normalizedWebsite === normalizedExcluded || normalizedWebsite.includes(normalizedExcluded);
+      });
+    });
+    
     // Validate and normalize
-    return casinos.map((casino) => ({
+    return filteredCasinos.map((casino) => ({
       ...casino,
       state,
       is_operational: casino.is_operational ?? true,
@@ -176,7 +201,7 @@ Important:
       casino_name: casinoName,
       state,
       last_verified: new Date().toISOString(),
-      source: 'AI Research - GPT-4',
+      source: website || offer.terms_url || undefined,
     }));
   } catch (error) {
     console.error(`Error researching offers for ${casinoName}:`, error);

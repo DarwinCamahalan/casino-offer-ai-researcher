@@ -30,7 +30,7 @@ interface DashboardData {
   researchCount: number
   stateData: Array<{ name: string; casinos: number; offers: number }>
   offerTypeData: Array<{ name: string; value: number }>
-  trendData: Array<{ month: string; discoveries: number }>
+  trendData: Array<{ month: string; discoveries: number; cumulative: number }>
 }
 
 interface StatCardProps {
@@ -91,16 +91,52 @@ const DashboardStats = () => {
       
       let casinos: Casino[] = []
       let offers: PromotionalOffer[] = []
+      let comparisons: any[] = []
       let researchCount = 0
 
-      // Load research history count
+      // Load research history and accumulate ALL data from ALL sessions
       if (researchHistory) {
         const history = JSON.parse(researchHistory)
         researchCount = Array.isArray(history) ? history.length : 0
+        
+        console.log(`📊 Loading cumulative data from ${researchCount} research sessions`)
+        
+        // Accumulate all casinos, offers, and comparisons from history
+        if (Array.isArray(history)) {
+          // Use a Set to track unique casinos by website to avoid duplicates
+          const uniqueCasinoWebsites = new Set<string>()
+          
+          history.forEach((session: any, index: number) => {
+            // Accumulate casinos (avoid duplicates by website)
+            if (session.casinos && Array.isArray(session.casinos)) {
+              session.casinos.forEach((casino: Casino) => {
+                if (casino.website && !uniqueCasinoWebsites.has(casino.website)) {
+                  casinos.push(casino)
+                  uniqueCasinoWebsites.add(casino.website)
+                } else if (!casino.website) {
+                  // If no website, add anyway (can't dedupe)
+                  casinos.push(casino)
+                }
+              })
+            }
+            
+            // Accumulate offers
+            if (session.newOffers && Array.isArray(session.newOffers)) {
+              offers.push(...session.newOffers)
+            }
+            
+            // Accumulate comparisons
+            if (session.comparisons && Array.isArray(session.comparisons)) {
+              comparisons.push(...session.comparisons)
+            }
+          })
+          
+          console.log(`📈 Cumulative totals: ${casinos.length} unique casinos, ${offers.length} offers, ${comparisons.length} comparisons`)
+        }
       }
 
-      // If we have stored research results, use them
-      if (storedResults) {
+      // Fallback to latest research results if no history
+      if (casinos.length === 0 && offers.length === 0 && storedResults) {
         const results: ResearchResult = JSON.parse(storedResults)
         
         // Extract casinos from missing_casinos
@@ -190,10 +226,10 @@ const DashboardStats = () => {
     }
   }
 
-  const generateTrendData = (historyJson: string | null): Array<{ month: string; discoveries: number }> => {
+  const generateTrendData = (historyJson: string | null): Array<{ month: string; discoveries: number; cumulative: number }> => {
     if (!historyJson) {
       return [
-        { month: 'Day 1', discoveries: 0 }
+        { month: 'No Data', discoveries: 0, cumulative: 0 }
       ]
     }
 
@@ -201,7 +237,7 @@ const DashboardStats = () => {
       const history = JSON.parse(historyJson)
       
       if (!Array.isArray(history) || history.length === 0) {
-        return [{ month: 'Day 1', discoveries: 0 }]
+        return [{ month: 'No Data', discoveries: 0, cumulative: 0 }]
       }
 
       // Sort history by timestamp
@@ -210,44 +246,46 @@ const DashboardStats = () => {
         .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
       if (sortedHistory.length === 0) {
-        return [{ month: 'Day 1', discoveries: 0 }]
+        return [{ month: 'No Data', discoveries: 0, cumulative: 0 }]
       }
 
-      // Get first research date
-      const firstDate = new Date(sortedHistory[0].timestamp)
-      const today = new Date()
+      // Create cumulative data - track unique casinos across sessions
+      let cumulativeCasinos = 0
+      const uniqueCasinoWebsites = new Set<string>()
       
-      // Calculate days since first research
-      const daysSinceFirst = Math.ceil((today.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24))
-      
-      // Create array for each day from first research to today
-      const trendData: Array<{ month: string; discoveries: number }> = []
-      
-      for (let i = 0; i <= Math.min(daysSinceFirst, 30); i++) {
-        const currentDate = new Date(firstDate)
-        currentDate.setDate(firstDate.getDate() + i)
-        
-        const dayLabel = i === 0 ? 'Start' : `Day ${i + 1}`
-        
-        // Count discoveries for this specific day
-        const discoveriesOnDay = sortedHistory
-          .filter((item: any) => {
-            const itemDate = new Date(item.timestamp)
-            return itemDate.toDateString() === currentDate.toDateString()
-          })
-          .reduce((sum: number, item: any) => sum + (item.casinosFound || 0), 0)
-        
-        trendData.push({
-          month: dayLabel,
-          discoveries: discoveriesOnDay
+      const trendData: Array<{ month: string; discoveries: number; cumulative: number }> = sortedHistory.map((item: any, index: number) => {
+        const timestamp = new Date(item.timestamp)
+        const timeLabel = timestamp.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
         })
-      }
+        
+        // Count unique casinos for cumulative total
+        const sessionCasinos = item.casinos || []
+        sessionCasinos.forEach((casino: any) => {
+          if (casino.website && !uniqueCasinoWebsites.has(casino.website)) {
+            uniqueCasinoWebsites.add(casino.website)
+            cumulativeCasinos++
+          } else if (!casino.website) {
+            // If no website, count anyway (can't dedupe)
+            cumulativeCasinos++
+          }
+        })
+        
+        return {
+          month: `#${index + 1}: ${timeLabel}`,
+          discoveries: item.casinosFound || 0,
+          cumulative: cumulativeCasinos
+        }
+      })
 
-      // If no data points, return at least the first day
-      return trendData.length > 0 ? trendData : [{ month: 'Day 1', discoveries: 0 }]
+      return trendData.length > 0 ? trendData : [{ month: 'No Data', discoveries: 0, cumulative: 0 }]
       
     } catch {
-      return [{ month: 'Day 1', discoveries: 0 }]
+      return [{ month: 'No Data', discoveries: 0, cumulative: 0 }]
     }
   }
 
@@ -416,7 +454,7 @@ const DashboardStats = () => {
     }
   }
 
-  // Line Chart Options
+  // Line Chart Options - Now shows both per-session and cumulative
   const getLineChartOption = () => {
     if (!dashboardData) return {}
     
@@ -433,10 +471,18 @@ const DashboardStats = () => {
           color: isDark ? '#fff' : '#000'
         }
       },
+      legend: {
+        data: ['Per Session', 'Cumulative Total'],
+        textStyle: {
+          color: labelColor
+        },
+        top: 10
+      },
       grid: {
         left: '3%',
         right: '4%',
         bottom: '3%',
+        top: '15%',
         containLabel: true
       },
       xAxis: {
@@ -449,7 +495,9 @@ const DashboardStats = () => {
           }
         },
         axisLabel: {
-          color: labelColor
+          color: labelColor,
+          rotate: dashboardData.trendData.length > 5 ? 45 : 0,
+          fontSize: 10
         }
       },
       yAxis: {
@@ -470,16 +518,42 @@ const DashboardStats = () => {
       },
       series: [
         {
-          name: 'Discoveries',
+          name: 'Per Session',
           type: 'line',
           data: dashboardData.trendData.map(d => d.discoveries),
+          smooth: true,
+          lineStyle: {
+            color: '#ec4899',
+            width: 2
+          },
+          itemStyle: {
+            color: '#ec4899'
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(236, 72, 153, 0.3)' },
+                { offset: 1, color: 'rgba(236, 72, 153, 0.05)' }
+              ]
+            }
+          }
+        },
+        {
+          name: 'Cumulative Total',
+          type: 'line',
+          data: dashboardData.trendData.map(d => d.cumulative || 0),
           smooth: true,
           lineStyle: {
             color: '#9333ea',
             width: 3
           },
           itemStyle: {
-            color: '#ec4899'
+            color: '#9333ea'
           },
           areaStyle: {
             color: {
@@ -521,17 +595,19 @@ const DashboardStats = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Stats Grid */}
+      {/* Stats Grid - Cumulative across all research sessions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatCard
-          title="Total Casinos"
+          title="Total Unique Casinos"
           value={dashboardData.totalCasinos}
+          change="Across all sessions"
           icon={<Database className="h-6 w-6 md:h-8 md:w-8" />}
           gradient="from-purple-600 to-purple-800"
         />
         <StatCard
-          title="Active Offers"
+          title="Total Offers Found"
           value={dashboardData.totalOffers}
+          change="Cumulative total"
           icon={<DollarSign className="h-6 w-6 md:h-8 md:w-8" />}
           gradient="from-pink-600 to-rose-800"
         />
@@ -542,7 +618,7 @@ const DashboardStats = () => {
           gradient="from-blue-600 to-cyan-800"
         />
         <StatCard
-          title="AI Researches"
+          title="Research Sessions"
           value={dashboardData.researchCount}
           icon={<Zap className="h-6 w-6 md:h-8 md:w-8" />}
           gradient="from-green-600 to-emerald-800"
@@ -600,13 +676,13 @@ const DashboardStats = () => {
       >
         <Card className="bg-card border-border shadow-lg">
           <CardHeader>
-            <CardTitle className="text-foreground text-base md:text-lg">Discovery Trend</CardTitle>
+            <CardTitle className="text-foreground text-base md:text-lg">Cumulative Discovery Growth</CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
-              New casino discoveries from your first research (up to 30 days)
+              Track your growing casino database across all research sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ReactECharts option={getLineChartOption()} style={{ height: '300px' }} />
+            <ReactECharts option={getLineChartOption()} style={{ height: '350px' }} />
           </CardContent>
         </Card>
       </motion.div>

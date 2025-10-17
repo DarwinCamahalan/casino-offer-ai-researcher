@@ -23,6 +23,18 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
   const [selectedStates, setSelectedStates] = useState<USState[]>(US_STATES)
   const [includeCasinos, setIncludeCasinos] = useState(true)
   const [includeOffers, setIncludeOffers] = useState(true)
+  const [researchedCount, setResearchedCount] = useState(0)
+
+  // Load researched casinos count on mount
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('researched_casinos')
+      if (stored) {
+        const casinos = JSON.parse(stored)
+        setResearchedCount(casinos.length)
+      }
+    }
+  })
 
   const handleStateToggle = (state: USState) => {
     setSelectedStates((prev) =>
@@ -38,6 +50,14 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
 
   const handleClearAll = () => {
     setSelectedStates([])
+  }
+
+  const handleClearResearchedCasinos = () => {
+    if (confirm('Are you sure you want to clear the list of researched casinos? This will allow the AI to discover them again in future research sessions.')) {
+      localStorage.removeItem('researched_casinos')
+      setResearchedCount(0)
+      alert('Researched casinos list has been cleared!')
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -308,6 +328,31 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
                 <p className="text-muted-foreground text-xs">
                   🔒 Powered by OpenAI GPT-4 • Secure & Reliable
                 </p>
+                
+                {/* Researched Casinos Management */}
+                {researchedCount > 0 && (
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-left">
+                        <p className="text-xs text-muted-foreground">
+                          🎯 <strong>{researchedCount}</strong> casino{researchedCount !== 1 ? 's' : ''} excluded from future searches
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          (Already discovered in previous research sessions)
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearResearchedCasinos}
+                        className="text-xs"
+                      >
+                        Reset List
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </motion.div>
           </form>

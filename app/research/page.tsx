@@ -17,18 +17,33 @@ const ResearchPage = () => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentRequest, setCurrentRequest] = useState<ResearchRequest | null>(null)
 
   const handleStartResearch = async (request: ResearchRequest) => {
     setIsLoading(true)
     setError(null)
+    setCurrentRequest(request)
 
     try {
+      // Get previously researched casinos from localStorage
+      const researchedCasinosKey = 'researched_casinos'
+      const storedCasinos = localStorage.getItem(researchedCasinosKey)
+      const researchedCasinos: string[] = storedCasinos ? JSON.parse(storedCasinos) : []
+      
+      console.log(`Found ${researchedCasinos.length} previously researched casinos`)
+      
+      // Add excluded casinos to request
+      const enhancedRequest: ResearchRequest = {
+        ...request,
+        exclude_casino_websites: researchedCasinos
+      }
+
       const response = await fetch('/api/ai/research', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(request),
+        body: JSON.stringify(enhancedRequest),
       })
 
       const data: ApiResponse<ResearchResult> = await response.json()
@@ -40,7 +55,19 @@ const ResearchPage = () => {
       // Store results in localStorage
       localStorage.setItem('research_results', JSON.stringify(data.data))
       
-      // Update research history
+      // Update researched casinos list
+      const newlyDiscoveredCasinos = Object.values(data.data.missing_casinos)
+        .flat()
+        .map(casino => casino.website)
+        .filter((website): website is string => !!website)
+      
+      if (newlyDiscoveredCasinos.length > 0) {
+        const updatedResearchedCasinos = [...researchedCasinos, ...newlyDiscoveredCasinos]
+        localStorage.setItem(researchedCasinosKey, JSON.stringify(updatedResearchedCasinos))
+        console.log(`Added ${newlyDiscoveredCasinos.length} new casinos to exclusion list (Total: ${updatedResearchedCasinos.length})`)
+      }
+      
+      // Update research history with detailed data
       const historyKey = 'research_history'
       const existingHistory = localStorage.getItem(historyKey)
       const history = existingHistory ? JSON.parse(existingHistory) : []
@@ -50,14 +77,24 @@ const ResearchPage = () => {
         0
       )
       
+      // Store complete research session data for analytics
       history.push({
         timestamp: new Date().toISOString(),
         states: request.states,
         casinosFound: totalCasinos,
-        offersFound: data.data.new_offers.length
+        offersFound: data.data.new_offers.length,
+        comparisonsFound: data.data.offer_comparisons.length,
+        betterOffersFound: data.data.offer_comparisons.filter(c => c.is_better).length,
+        // Store detailed data for cumulative analytics
+        casinos: Object.values(data.data.missing_casinos).flat(),
+        newOffers: data.data.new_offers,
+        comparisons: data.data.offer_comparisons,
+        executionTime: data.data.execution_time_ms,
+        apiCallsMade: data.data.api_calls_made
       })
       
       localStorage.setItem(historyKey, JSON.stringify(history))
+      console.log(`Research history updated: ${history.length} total sessions`)
       
       // Also store in sessionStorage for backwards compatibility
       sessionStorage.setItem('research_results', JSON.stringify(data.data))
@@ -110,7 +147,12 @@ const ResearchPage = () => {
       {/* Form or Loading */}
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <ResearchLoading key="loading" estimatedTime={120} />
+          <ResearchLoading 
+            key="loading" 
+            estimatedTime={120} 
+            includeCasinoDiscovery={currentRequest?.include_casino_discovery ?? true}
+            includeOfferResearch={currentRequest?.include_offer_research ?? true}
+          />
         ) : (
           <ResearchForm key="form" onStartResearch={handleStartResearch} isLoading={isLoading} />
         )}

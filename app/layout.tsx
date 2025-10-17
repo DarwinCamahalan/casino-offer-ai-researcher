@@ -9,6 +9,7 @@ import { ReactQueryProvider } from '@/lib/providers/react-query-provider'
 import { ThemeProvider } from '@/lib/providers/theme-provider'
 import Sidebar from './_components/Sidebar'
 import Footer from './_components/Footer'
+import SplashScreen from './_components/SplashScreen'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -40,6 +41,9 @@ const RootLayout = ({
           disableTransitionOnChange={false}
         >
           <ReactQueryProvider>
+            {/* Splash Screen */}
+            <SplashScreen />
+            
             <div className="flex min-h-screen bg-background">
               {/* Sidebar */}
               <Sidebar />

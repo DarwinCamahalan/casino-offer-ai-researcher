@@ -34,6 +34,7 @@ export interface ResearchRequest {
   include_casino_discovery?: boolean
   include_offer_research?: boolean
   force_refresh?: boolean
+  exclude_casino_websites?: string[] // Previously researched casino websites to exclude
 }
 
 export interface ErrorResponse {

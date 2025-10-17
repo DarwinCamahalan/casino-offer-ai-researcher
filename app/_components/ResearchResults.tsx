@@ -127,7 +127,7 @@ const ResearchResults = ({ results }: Props) => {
                 Missing Casinos
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Licensed casinos not yet tracked in your database
+                Casinos not yet tracked in your database
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -153,28 +153,31 @@ const ResearchResults = ({ results }: Props) => {
                           >
                             <Card className="bg-card/50 border-border">
                               <CardContent className="p-4">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1">
-                                    <h4 className="text-foreground font-semibold">{casino.name}</h4>
-                                    {casino.brand && (
-                                      <p className="text-muted-foreground text-sm mt-1">
-                                        Brand: {casino.brand}
-                                      </p>
-                                    )}
-                                    {casino.license_number && (
-                                      <p className="text-muted-foreground text-xs mt-1">
-                                        License: {casino.license_number}
-                                      </p>
-                                    )}
+                                <div className="space-y-2">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <h4 className="text-foreground font-semibold">{casino.name}</h4>
+                                      {casino.brand && (
+                                        <p className="text-muted-foreground text-sm mt-1">
+                                          Brand: {casino.brand}
+                                        </p>
+                                      )}
+                                      {casino.license_number && !casino.license_number.match(/^LIC-\d{4}$/) && (
+                                        <p className="text-muted-foreground text-xs mt-1">
+                                          License: {casino.license_number}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                   {casino.website && (
                                     <a
                                       href={casino.website}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-400 hover:text-purple-300"
+                                      className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm mt-2 group"
                                     >
-                                      <ExternalLink className="h-4 w-4" />
+                                      <span className="truncate">{casino.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                                      <ExternalLink className="h-3 w-3 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
                                     </a>
                                   )}
                                 </div>
@@ -236,18 +239,18 @@ const ResearchResults = ({ results }: Props) => {
                             </p>
                           )}
 
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
                             {offer.bonus_amount && (
-                              <Badge className="bg-green-600">
+                              <Badge className="bg-green-600 flex-shrink-0">
                                 {offer.bonus_amount}
                               </Badge>
                             )}
                             {offer.match_percentage && offer.match_percentage.toLowerCase() !== 'n/a' && !offer.match_percentage.toLowerCase().includes('n/a') && (
-                              <Badge className="bg-blue-600">
+                              <Badge className="bg-blue-600 flex-shrink-0">
                                 {offer.match_percentage}% Match
                               </Badge>
                             )}
-                            <Badge variant="outline" className="border-border text-foreground">
+                            <Badge variant="outline" className="border-border text-foreground flex-shrink-0">
                               {STATE_NAMES[offer.state as keyof typeof STATE_NAMES]}
                             </Badge>
                           </div>
@@ -259,6 +262,18 @@ const ResearchResults = ({ results }: Props) => {
                                 {offer.promo_code}
                               </p>
                             </div>
+                          )}
+
+                          {offer.source && offer.source.startsWith('http') && (
+                            <a
+                              href={offer.source}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-xs mt-2 group"
+                            >
+                              <span className="truncate">{offer.source.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                              <ExternalLink className="h-3 w-3 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
                           )}
 
                           {offer.last_verified && (
@@ -348,7 +363,7 @@ const ResearchResults = ({ results }: Props) => {
                             </div>
                           )}
 
-                          {comparison.confidence_score !== undefined && (
+                          {comparison.confidence_score !== undefined && comparison.confidence_score >= 0 && comparison.confidence_score <= 1 && (
                             <div className="text-xs text-muted-foreground">
                               Confidence: {Math.round(comparison.confidence_score * 100)}%
                             </div>

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,18 +12,54 @@ import { Loader2, Sparkles, Database, TrendingUp, CheckCircle2 } from 'lucide-re
 
 interface Props {
   estimatedTime?: number // in seconds
+  includeCasinoDiscovery?: boolean
+  includeOfferResearch?: boolean
 }
 
-const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
+const ResearchLoading = ({ 
+  estimatedTime = 120, 
+  includeCasinoDiscovery = true,
+  includeOfferResearch = true 
+}: Props) => {
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
 
-  const steps = [
-    { label: 'Fetching existing data', icon: <Database className="h-5 w-5" />, duration: 15 },
-    { label: 'Discovering casinos', icon: <Sparkles className="h-5 w-5" />, duration: 40 },
-    { label: 'Researching offers', icon: <TrendingUp className="h-5 w-5" />, duration: 45 },
-    { label: 'Comparing results', icon: <CheckCircle2 className="h-5 w-5" />, duration: 20 },
+  // Define all possible steps
+  const allSteps = [
+    { 
+      id: 'fetching',
+      label: 'Fetching existing data', 
+      icon: <Database className="h-5 w-5" />, 
+      duration: 15,
+      alwaysShow: true
+    },
+    { 
+      id: 'discovering',
+      label: 'Discovering casinos', 
+      icon: <Sparkles className="h-5 w-5" />, 
+      duration: 40,
+      showWhen: includeCasinoDiscovery
+    },
+    { 
+      id: 'researching',
+      label: 'Researching offers', 
+      icon: <TrendingUp className="h-5 w-5" />, 
+      duration: 45,
+      showWhen: includeOfferResearch
+    },
+    { 
+      id: 'comparing',
+      label: 'Comparing results', 
+      icon: <CheckCircle2 className="h-5 w-5" />, 
+      duration: 20,
+      showWhen: includeCasinoDiscovery || includeOfferResearch
+    },
   ]
+
+  // Filter steps based on selected options
+  const steps = useMemo(() => {
+    return allSteps.filter(step => step.alwaysShow || step.showWhen)
+  }, [includeCasinoDiscovery, includeOfferResearch])
 
   useEffect(() => {
     const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0)
@@ -51,7 +87,7 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [steps])
 
   return (
     <motion.div
@@ -79,7 +115,9 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
                 AI Research in Progress
               </h3>
               <p className="text-muted-foreground text-sm">
-                Analyzing casinos and promotional offers...
+                {includeCasinoDiscovery && includeOfferResearch && 'Analyzing casinos and promotional offers...'}
+                {includeCasinoDiscovery && !includeOfferResearch && 'Discovering licensed casinos...'}
+                {!includeCasinoDiscovery && includeOfferResearch && 'Researching promotional offers...'}
               </p>
             </div>
 

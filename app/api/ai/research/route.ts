@@ -68,16 +68,20 @@ export async function POST(request: NextRequest) {
     console.log(`Found ${existingOffers.length} existing offers from ${existingCasinos.length} casinos`)
 
     // Step 2: Discover casinos (if enabled)
+    // Get previously researched casino websites from request to avoid duplicates
+    const excludeCasinoWebsites = requestData.exclude_casino_websites || []
+    console.log(`Excluding ${excludeCasinoWebsites.length} previously researched casinos`)
+    
     let discoveredCasinos: Casino[] = []
     if (include_casino_discovery) {
       console.log(`Discovering casinos in: ${states.join(', ')}`)
       
       for (const state of states) {
         try {
-          const stateCasinos = await discoverCasinosInState(state)
+          const stateCasinos = await discoverCasinosInState(state, excludeCasinoWebsites)
           discoveredCasinos.push(...stateCasinos)
           apiCallsCount++
-          console.log(`Found ${stateCasinos.length} casinos in ${state}`)
+          console.log(`Found ${stateCasinos.length} NEW casinos in ${state}`)
           
           // Add delay to respect rate limits
           await delay(1000)
@@ -103,10 +107,28 @@ export async function POST(request: NextRequest) {
     if (include_offer_research) {
       console.log('Researching promotional offers...')
       
-      // Research offers for both existing and newly discovered casinos
+      // If casino discovery is disabled but we need casinos to research offers for,
+      // discover them anyway (but don't include them in missing casinos)
+      let tempDiscoveredCasinos: Casino[] = []
+      if (!include_casino_discovery) {
+        console.log(`Discovering casinos for offer research (not included in results)...`)
+        for (const state of states) {
+          try {
+            const stateCasinos = await discoverCasinosInState(state, excludeCasinoWebsites)
+            tempDiscoveredCasinos.push(...stateCasinos)
+            apiCallsCount++
+            await delay(1000)
+          } catch (error) {
+            console.error(`Error discovering casinos in ${state}:`, error)
+          }
+        }
+      }
+      
+      // Research offers for existing casinos, discovered casinos, and missing casinos
       const casinosToResearch = [
         ...existingCasinos.filter((c) => states.includes(c.state)),
         ...missingCasinos,
+        ...tempDiscoveredCasinos,
       ]
 
       try {

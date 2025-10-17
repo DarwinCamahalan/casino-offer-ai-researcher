@@ -94,10 +94,10 @@ const ResultsContent = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
             🎰 Research Results
           </h1>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             AI-powered casino and offer discovery results
           </p>
         </div>
@@ -106,7 +106,7 @@ const ResultsContent = () => {
           <Button
             onClick={handleBackToDashboard}
             variant="outline"
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-border text-foreground hover:bg-muted"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -114,7 +114,7 @@ const ResultsContent = () => {
           
           <Button
             onClick={handleNewResearch}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
           >
             🚀 New Research
           </Button>
@@ -129,7 +129,7 @@ const ResultsContent = () => {
           <Button
             onClick={handleNewResearch}
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
           >
             🚀 Start New Research
           </Button>
@@ -147,7 +147,7 @@ const ResultsContent = () => {
             }}
             size="lg"
             variant="outline"
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-border text-foreground hover:bg-muted"
           >
             💾 Download JSON
           </Button>
