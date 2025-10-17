@@ -95,7 +95,7 @@ const ResultsContent = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-            🎰 Research Results
+            Research Results
           </h1>
           <p className="text-muted-foreground">
             AI-powered casino and offer discovery results

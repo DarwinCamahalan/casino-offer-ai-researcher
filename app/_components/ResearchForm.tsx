@@ -11,8 +11,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Loader2, Search, Sparkles, MapPin, Target, Info } from 'lucide-react'
+import { Loader2, Search, Sparkles, MapPin, Target, Info, AlertTriangle, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface Props {
   onStartResearch: (request: ResearchRequest) => void
@@ -24,6 +32,7 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
   const [includeCasinos, setIncludeCasinos] = useState(true)
   const [includeOffers, setIncludeOffers] = useState(true)
   const [researchedCount, setResearchedCount] = useState(0)
+  const [showResetModal, setShowResetModal] = useState(false)
 
   // Load researched casinos count on mount
   useState(() => {
@@ -52,12 +61,26 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
     setSelectedStates([])
   }
 
-  const handleClearResearchedCasinos = () => {
-    if (confirm('Are you sure you want to clear the list of researched casinos? This will allow the AI to discover them again in future research sessions.')) {
-      localStorage.removeItem('researched_casinos')
-      setResearchedCount(0)
-      alert('Researched casinos list has been cleared!')
-    }
+  const handleOpenResetModal = () => {
+    setShowResetModal(true)
+  }
+
+  const handleConfirmReset = () => {
+    // Clear all analytics and research data
+    localStorage.removeItem('researched_casinos')
+    localStorage.removeItem('research_history')
+    localStorage.removeItem('research_results')
+    sessionStorage.removeItem('research_results')
+    
+    // Reset state
+    setResearchedCount(0)
+    setShowResetModal(false)
+    
+    // Trigger events to update dashboard and other components
+    window.dispatchEvent(new Event('storage'))
+    window.dispatchEvent(new CustomEvent('dataAvailabilityChanged', { detail: { hasData: false } }))
+    
+    console.log('✅ All research data and analytics cleared successfully')
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -345,10 +368,11 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={handleClearResearchedCasinos}
-                        className="text-xs"
+                        onClick={handleOpenResetModal}
+                        className="text-xs flex items-center gap-1"
                       >
-                        Reset List
+                        <Trash2 className="h-3 w-3" />
+                        Reset All
                       </Button>
                     </div>
                   </div>
@@ -358,6 +382,71 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Reset Confirmation Modal */}
+      <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Reset All Research Data?
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              This action will permanently delete:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-3">
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-2">
+              <div className="flex items-start gap-2 text-sm text-foreground">
+                <span className="text-destructive">•</span>
+                <span>All <strong>{researchedCount} researched casinos</strong> (exclusion list)</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-foreground">
+                <span className="text-destructive">•</span>
+                <span>Complete <strong>research history</strong> (all sessions)</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-foreground">
+                <span className="text-destructive">•</span>
+                <span>All <strong>analytics and statistics</strong></span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-foreground">
+                <span className="text-destructive">•</span>
+                <span>Dashboard <strong>charts and trends</strong></span>
+              </div>
+            </div>
+            
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <span>
+                  This will allow the AI to rediscover all casinos in future research sessions. 
+                  Your Xano database will not be affected.
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowResetModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmReset}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Yes, Reset Everything
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   )
 }

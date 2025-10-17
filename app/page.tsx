@@ -80,8 +80,7 @@ const HomePage = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-2 md:gap-3">
-              <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-yellow-400" />
-              Casino Offer AI Researcher
+              Casino Offer AI Dashboard
             </h1>
             <p className="text-muted-foreground text-base md:text-lg">
               Intelligent discovery powered by GPT-4

@@ -18,11 +18,63 @@ import {
   Clock, 
   Zap,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
+import { useRef } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   results: ResearchResult
+}
+
+// Helper component for scrollable pills with carousel arrows
+const PillCarousel = ({ children }: { children: React.ReactNode }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount)
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  return (
+    <div className="relative group">
+      {/* Left Arrow */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        onClick={() => scroll('left')}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {/* Scrollable Pills Container */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 scroll-smooth"
+      >
+        {children}
+      </div>
+
+      {/* Right Arrow */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        onClick={() => scroll('right')}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  )
 }
 
 const ResearchResults = ({ results }: Props) => {
@@ -239,7 +291,7 @@ const ResearchResults = ({ results }: Props) => {
                             </p>
                           )}
 
-                          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+                          <PillCarousel>
                             {offer.bonus_amount && (
                               <Badge className="bg-green-600 flex-shrink-0">
                                 {offer.bonus_amount}
@@ -247,13 +299,13 @@ const ResearchResults = ({ results }: Props) => {
                             )}
                             {offer.match_percentage && offer.match_percentage.toLowerCase() !== 'n/a' && !offer.match_percentage.toLowerCase().includes('n/a') && (
                               <Badge className="bg-blue-600 flex-shrink-0">
-                                {offer.match_percentage}% Match
+                                {offer.match_percentage.replace(/%/g, '')}% Match
                               </Badge>
                             )}
                             <Badge variant="outline" className="border-border text-foreground flex-shrink-0">
                               {STATE_NAMES[offer.state as keyof typeof STATE_NAMES]}
                             </Badge>
-                          </div>
+                          </PillCarousel>
 
                           {offer.promo_code && (
                             <div className="bg-muted/50 rounded px-3 py-2 mt-2">
