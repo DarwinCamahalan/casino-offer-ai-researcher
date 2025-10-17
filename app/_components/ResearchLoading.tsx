@@ -60,7 +60,7 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
       exit={{ opacity: 0, scale: 0.9 }}
       className="w-full"
     >
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10 shadow-2xl">
+      <Card className="bg-card/95 backdrop-blur-xl border-border shadow-2xl">
         <CardContent className="p-8">
           <div className="flex flex-col items-center gap-6 text-center">
             {/* Animated Spinner */}
@@ -75,10 +75,10 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
 
             {/* Title */}
             <div>
-              <h3 className="text-white text-2xl font-bold mb-2">
+              <h3 className="text-foreground text-2xl font-bold mb-2">
                 AI Research in Progress
               </h3>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Analyzing casinos and promotional offers...
               </p>
             </div>
@@ -86,12 +86,12 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
             {/* Progress Bar */}
             <div className="w-full max-w-md">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-400 text-sm">Progress</span>
+                <span className="text-muted-foreground text-sm">Progress</span>
                 <span className="text-purple-400 text-sm font-semibold">
                   {Math.round(progress)}%
                 </span>
               </div>
-              <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_100%]"
                   initial={{ width: 0 }}
@@ -125,16 +125,16 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
                         ? 'bg-green-600/20 border border-green-500/30'
                         : isCurrent
                         ? 'bg-purple-600/20 border border-purple-500/50 shadow-lg shadow-purple-500/20'
-                        : 'bg-white/5 border border-white/10'
+                        : 'bg-muted/50 border border-border'
                     }`}
                   >
                     <div className={`${
-                      isCompleted ? 'text-green-400' : isCurrent ? 'text-purple-400' : 'text-gray-500'
+                      isCompleted ? 'text-green-400' : isCurrent ? 'text-purple-400' : 'text-muted-foreground'
                     }`}>
                       {step.icon}
                     </div>
                     <span className={`flex-1 text-sm font-medium ${
-                      isCompleted ? 'text-green-300' : isCurrent ? 'text-white' : 'text-gray-500'
+                      isCompleted ? 'text-green-400' : isCurrent ? 'text-foreground' : 'text-muted-foreground'
                     }`}>
                       {step.label}
                     </span>
@@ -157,19 +157,19 @@ const ResearchLoading = ({ estimatedTime = 120 }: Props) => {
 
             {/* Status Badges */}
             <div className="flex flex-wrap justify-center gap-2 mt-4">
-              <Badge variant="outline" className="border-purple-400 text-purple-300 bg-purple-600/10">
+              <Badge variant="outline" className="border-purple-400 text-purple-400 bg-purple-600/10">
                 Using GPT-4
               </Badge>
-              <Badge variant="outline" className="border-blue-400 text-blue-300 bg-blue-600/10">
+              <Badge variant="outline" className="border-blue-400 text-blue-400 bg-blue-600/10">
                 Official Sources
               </Badge>
-              <Badge variant="outline" className="border-green-400 text-green-300 bg-green-600/10">
+              <Badge variant="outline" className="border-green-400 text-green-400 bg-green-600/10">
                 Real-time Data
               </Badge>
             </div>
 
             {/* Estimated Time */}
-            <p className="text-gray-400 text-xs mt-2">
+            <p className="text-muted-foreground text-xs mt-2">
               Estimated time remaining: {Math.max(0, estimatedTime - Math.round((progress / 100) * estimatedTime))}s
             </p>
           </div>

@@ -3,7 +3,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import ResearchResults from '@/components/ResearchResults'
+import ResearchResults from '@/app/_components/ResearchResults'
 import { ResearchResult } from '@/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,8 +18,8 @@ const ResultsContent = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Try to get results from session storage
-    const storedResults = sessionStorage.getItem('research_results')
+    // Try to get results from localStorage first, then sessionStorage
+    const storedResults = localStorage.getItem('research_results') || sessionStorage.getItem('research_results')
     
     if (storedResults) {
       try {
@@ -40,8 +40,9 @@ const ResultsContent = () => {
   }
 
   const handleNewResearch = () => {
+    // Don't clear localStorage, just sessionStorage
     sessionStorage.removeItem('research_results')
-    router.push('/')
+    router.push('/research')
   }
 
   if (loading) {

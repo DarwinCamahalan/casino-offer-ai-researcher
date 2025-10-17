@@ -1,5 +1,5 @@
 /**
- * Enhanced Footer Component - More visible and modern design
+ * Enhanced Footer Component - Theme-aware with darker styling
  */
 
 'use client'
@@ -8,9 +8,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Mail, Phone, Linkedin, Github, Heart, ExternalLink, Zap } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useDataAvailability } from '@/lib/hooks/useDataAvailability'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
+  const { hasData } = useDataAvailability()
 
   const contactLinks = [
     {
@@ -36,10 +38,10 @@ const Footer = () => {
   ]
 
   return (
-    <footer className="mt-auto border-t-2 border-purple-500/20 bg-gradient-to-b from-gray-900 to-black">
-      <div className="container mx-auto px-6 py-12">
+    <footer className="mt-auto border-t border-border bg-gradient-to-b from-card via-card/50 to-card/90 dark:to-black">
+      <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-8">
           {/* About Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -48,15 +50,15 @@ const Footer = () => {
             className="space-y-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                <Zap className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Casino Offer AI</h3>
-                <p className="text-purple-300 text-sm">Research Platform</p>
+                <h3 className="text-lg md:text-xl font-bold text-foreground">Casino Offer AI</h3>
+                <p className="text-primary text-xs md:text-sm">Research Platform</p>
               </div>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               An intelligent AI research assistant powered by GPT-4 that identifies missing casinos 
               and better promotional offers across multiple states.
             </p>
@@ -69,21 +71,28 @@ const Footer = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="space-y-4"
           >
-            <h3 className="text-lg font-bold text-white">Quick Links</h3>
-            <ul className="space-y-3">
+            <h3 className="text-base md:text-lg font-bold text-foreground">Quick Links</h3>
+            <ul className="space-y-2 md:space-y-3">
               <li>
-                <Link 
-                  href="/" 
-                  className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  Dashboard
-                </Link>
+                {hasData ? (
+                  <Link 
+                    href="/" 
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group text-sm md:text-base"
+                  >
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                    Dashboard
+                  </Link>
+                ) : (
+                  <span className="text-muted-foreground/50 flex items-center gap-2 text-sm md:text-base cursor-not-allowed">
+                    <span>→</span>
+                    Dashboard
+                  </span>
+                )}
               </li>
               <li>
                 <Link 
                   href="/research" 
-                  className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group text-sm md:text-base"
                 >
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                   Research
@@ -94,7 +103,7 @@ const Footer = () => {
                   href="https://github.com/DarwinCamahalan/casino-offer-ai-researcher" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group text-sm md:text-base"
                 >
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                   Documentation
@@ -111,9 +120,9 @@ const Footer = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-4"
           >
-            <h3 className="text-lg font-bold text-white">Developer Contact</h3>
-            <div className="space-y-3">
-              <p className="text-white font-semibold">Darwin Camahalan</p>
+            <h3 className="text-base md:text-lg font-bold text-foreground">Developer Contact</h3>
+            <div className="space-y-2 md:space-y-3">
+              <p className="text-foreground font-semibold">Darwin Camahalan</p>
               {contactLinks.map((link, index) => (
                 <motion.a
                   key={index}
@@ -121,37 +130,29 @@ const Footer = () => {
                   target={link.href.startsWith('http') ? '_blank' : undefined}
                   rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   whileHover={{ x: 4 }}
-                  className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                 >
                   {link.icon}
-                  <span className="text-sm">{link.label}</span>
+                  <span className="text-xs md:text-sm">{link.label}</span>
                 </motion.a>
               ))}
             </div>
           </motion.div>
         </div>
 
-        <Separator className="bg-white/10 mb-6" />
+        <Separator className="bg-border mb-4 md:mb-6" />
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="flex items-center gap-2 text-gray-400 text-sm"
+            className="flex items-center gap-2 text-muted-foreground text-xs md:text-sm"
           >
             <span>© {currentYear} Darwin Camahalan. All rights reserved.</span>
           </motion.div>
           
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="flex items-center gap-2 text-gray-400 text-sm"
-          >
-            <span>Built with</span>
-            <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" />
-            <span>using Next.js & OpenAI GPT-4</span>
-          </motion.div>
+
         </div>
 
         {/* Tech Stack Badges */}
@@ -159,16 +160,16 @@ const Footer = () => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-8 flex flex-wrap justify-center gap-2"
+          className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2"
         >
-          {['Next.js 14', 'TypeScript', 'Tailwind CSS', 'shadcn/ui', 'OpenAI GPT-4', 'Framer Motion', 'Recharts'].map((tech, index) => (
+          {['Next.js 14', 'TypeScript', 'Tailwind CSS', 'shadcn/ui', 'OpenAI GPT-4', 'Framer Motion', 'Apache ECharts'].map((tech, index) => (
             <motion.span
               key={tech}
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 + index * 0.05 }}
               whileHover={{ scale: 1.1 }}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-xs text-purple-300 font-medium backdrop-blur-sm"
+              className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-primary/30 rounded-full text-xs text-primary font-medium backdrop-blur-sm"
             >
               {tech}
             </motion.span>

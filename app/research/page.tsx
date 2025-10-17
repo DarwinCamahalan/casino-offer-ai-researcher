@@ -37,8 +37,36 @@ const ResearchPage = () => {
         throw new Error(data.error?.message || 'Research failed')
       }
 
-      // Store results in session storage and navigate to results page
+      // Store results in localStorage
+      localStorage.setItem('research_results', JSON.stringify(data.data))
+      
+      // Update research history
+      const historyKey = 'research_history'
+      const existingHistory = localStorage.getItem(historyKey)
+      const history = existingHistory ? JSON.parse(existingHistory) : []
+      
+      const totalCasinos = Object.values(data.data.missing_casinos).reduce(
+        (sum, casinos) => sum + casinos.length,
+        0
+      )
+      
+      history.push({
+        timestamp: new Date().toISOString(),
+        states: request.states,
+        casinosFound: totalCasinos,
+        offersFound: data.data.new_offers.length
+      })
+      
+      localStorage.setItem(historyKey, JSON.stringify(history))
+      
+      // Also store in sessionStorage for backwards compatibility
       sessionStorage.setItem('research_results', JSON.stringify(data.data))
+      
+      // Trigger storage event for other components to update
+      window.dispatchEvent(new Event('storage'))
+      // Trigger custom event for immediate updates
+      window.dispatchEvent(new CustomEvent('dataAvailabilityChanged', { detail: { hasData: true } }))
+      
       router.push('/results')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
@@ -48,14 +76,14 @@ const ResearchPage = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 min-h-full">
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 min-h-full">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-4xl font-bold text-white mb-2">AI Research</h1>
-        <p className="text-gray-300">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">AI Research</h1>
+        <p className="text-muted-foreground text-sm md:text-base">
           Configure and start intelligent casino and offer discovery
         </p>
       </motion.div>
@@ -68,10 +96,10 @@ const ResearchPage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Alert className="bg-red-900/30 border-red-500/50">
-              <AlertCircle className="h-4 w-4 text-red-400" />
-              <AlertDescription className="text-gray-300">
-                <h3 className="text-red-300 font-semibold mb-2">Error</h3>
+            <Alert className="bg-destructive/10 border-destructive/50">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-foreground">
+                <h3 className="text-destructive font-semibold mb-2">Error</h3>
                 <p>{error}</p>
               </AlertDescription>
             </Alert>

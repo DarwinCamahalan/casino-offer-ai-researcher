@@ -1,5 +1,5 @@
 /**
- * Research Form Component - Modern with Framer Motion animations
+ * Research Form Component - Modern redesigned with enhanced UX
  */
 
 'use client'
@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Loader2, Search, Sparkles } from 'lucide-react'
+import { Loader2, Search, Sparkles, MapPin, Target, Info } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 interface Props {
   onStartResearch: (request: ResearchRequest) => void
@@ -31,11 +32,24 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
     )
   }
 
+  const handleSelectAll = () => {
+    setSelectedStates(US_STATES)
+  }
+
+  const handleClearAll = () => {
+    setSelectedStates([])
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
     if (selectedStates.length === 0) {
       alert('Please select at least one state')
+      return
+    }
+
+    if (!includeCasinos && !includeOffers) {
+      alert('Please select at least one research option')
       return
     }
 
@@ -53,25 +67,36 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="max-w-4xl mx-auto"
     >
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10 shadow-2xl">
-        <CardHeader>
+      <Card className="bg-card/95 backdrop-blur-sm border-border shadow-2xl">
+        <CardHeader className="space-y-3">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <CardTitle className="text-2xl text-white flex items-center gap-2">
-              <Search className="h-6 w-6 text-purple-400" />
-              Configure Research
-            </CardTitle>
-            <CardDescription className="text-gray-300 mt-2">
-              Select states and research options to discover casinos and promotional offers
-            </CardDescription>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <CardTitle className="text-2xl md:text-3xl text-foreground flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg">
+                    <Search className="h-6 w-6 text-white" />
+                  </div>
+                  AI Research Configuration
+                </CardTitle>
+                <CardDescription className="text-muted-foreground text-sm md:text-base">
+                  Configure your intelligent research parameters to discover casinos and promotional offers
+                </CardDescription>
+              </div>
+              <Badge className="bg-yellow-500 text-black font-bold text-xs md:text-sm">
+                GPT-4
+              </Badge>
+            </div>
           </motion.div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+        <CardContent className="space-y-6 md:space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             {/* State Selection */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -79,39 +104,83 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
               transition={{ delay: 0.3 }}
               className="space-y-4"
             >
-              <Label className="text-white font-semibold text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-yellow-400" />
-                Select States to Research
-              </Label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <Label className="text-foreground font-bold text-base md:text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Select Target States
+                  <Badge variant="outline" className="ml-2">
+                    {selectedStates.length} of {US_STATES.length}
+                  </Badge>
+                </Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAll}
+                    className="text-xs md:text-sm"
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearAll}
+                    className="text-xs md:text-sm"
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 {US_STATES.map((state, index) => (
                   <motion.div
                     key={state}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 + index * 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    transition={{ delay: 0.4 + index * 0.05 }}
                   >
                     <label
-                      className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer group ${
                         selectedStates.includes(state)
-                          ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-500'
-                          : 'bg-white/5 border-white/10 hover:border-white/30'
+                          ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-primary shadow-lg shadow-primary/25'
+                          : 'bg-card/50 border-border hover:border-primary/50 hover:bg-accent'
                       }`}
                     >
                       <Checkbox
                         checked={selectedStates.includes(state)}
                         onCheckedChange={() => handleStateToggle(state)}
-                        className="border-white/30"
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
-                      <div>
-                        <span className="text-white font-medium">{STATE_NAMES[state]}</span>
-                        <span className="text-purple-300 text-sm ml-2">({state})</span>
+                      <div className="flex-1">
+                        <span className="text-foreground font-semibold text-sm md:text-base">
+                          {STATE_NAMES[state]}
+                        </span>
+                        <Badge variant="secondary" className="ml-2 text-xs">
+                          {state}
+                        </Badge>
                       </div>
+                      {selectedStates.includes(state) && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="text-primary"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </motion.div>
+                      )}
                     </label>
                   </motion.div>
                 ))}
+              </div>
+
+              <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  Select one or more states for the AI to research. Each state will be analyzed for licensed casinos and promotional offers.
+                </p>
               </div>
             </motion.div>
 
@@ -119,58 +188,84 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.6 }}
               className="space-y-4"
             >
-              <Label className="text-white font-semibold text-base">
-                Research Options
+              <Label className="text-foreground font-bold text-base md:text-lg flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Research Objectives
               </Label>
               
-              <motion.label
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:border-purple-500/50 transition-all cursor-pointer"
-              >
-                <Checkbox
-                  checked={includeCasinos}
-                  onCheckedChange={(checked) => setIncludeCasinos(checked as boolean)}
-                  className="border-white/30"
-                />
-                <div>
-                  <div className="text-white font-medium">Discover Missing Casinos</div>
-                  <div className="text-gray-400 text-sm">
-                    Find licensed casinos not yet tracked in your database
+              <div className="space-y-3">
+                <motion.label
+                  whileHover={{ x: 4 }}
+                  className={`flex items-start gap-4 p-4 md:p-5 rounded-xl border-2 transition-all cursor-pointer group ${
+                    includeCasinos
+                      ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-primary shadow-lg shadow-primary/25'
+                      : 'bg-card/50 border-border hover:border-primary/50 hover:bg-accent'
+                  }`}
+                >
+                  <Checkbox
+                    checked={includeCasinos}
+                    onCheckedChange={(checked) => setIncludeCasinos(checked as boolean)}
+                    className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-foreground font-semibold text-sm md:text-base">
+                        Discover Missing Casinos
+                      </span>
+                      <Badge className="bg-purple-500 text-white text-xs">
+                        Recommended
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-xs md:text-sm">
+                      Find licensed casino operators not yet tracked in your database. The AI will query official gaming commission websites and regulatory sources.
+                    </p>
                   </div>
-                </div>
-              </motion.label>
+                </motion.label>
 
-              <motion.label
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:border-purple-500/50 transition-all cursor-pointer"
-              >
-                <Checkbox
-                  checked={includeOffers}
-                  onCheckedChange={(checked) => setIncludeOffers(checked as boolean)}
-                  className="border-white/30"
-                />
-                <div>
-                  <div className="text-white font-medium">Research Promotional Offers</div>
-                  <div className="text-gray-400 text-sm">
-                    Identify current casino promotions and compare with existing offers
+                <motion.label
+                  whileHover={{ x: 4 }}
+                  className={`flex items-start gap-4 p-4 md:p-5 rounded-xl border-2 transition-all cursor-pointer group ${
+                    includeOffers
+                      ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-primary shadow-lg shadow-primary/25'
+                      : 'bg-card/50 border-border hover:border-primary/50 hover:bg-accent'
+                  }`}
+                >
+                  <Checkbox
+                    checked={includeOffers}
+                    onCheckedChange={(checked) => setIncludeOffers(checked as boolean)}
+                    className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-foreground font-semibold text-sm md:text-base">
+                        Research Promotional Offers
+                      </span>
+                      <Badge className="bg-pink-500 text-white text-xs">
+                        High Value
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-xs md:text-sm">
+                      Identify current casino promotions, welcome bonuses, and special offers. Compare with existing offers to find better deals and new opportunities.
+                    </p>
                   </div>
-                </div>
-              </motion.label>
+                </motion.label>
+              </div>
             </motion.div>
 
             {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
+              transition={{ delay: 0.8 }}
+              className="space-y-4"
             >
               <Button
                 type="submit"
-                disabled={isLoading || selectedStates.length === 0}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-lg shadow-lg shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || selectedStates.length === 0 || (!includeCasinos && !includeOffers)}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-5 md:py-6 text-base md:text-lg shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 size="lg"
               >
                 <AnimatePresence mode="wait">
@@ -183,7 +278,7 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
                       className="flex items-center gap-2"
                     >
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Researching...</span>
+                      <span>AI is Researching...</span>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -193,21 +288,27 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
                       exit={{ opacity: 0 }}
                       className="flex items-center gap-2"
                     >
-                      <Search className="h-5 w-5" />
+                      <Sparkles className="h-5 w-5" />
                       <span>Start AI Research</span>
+                      <Search className="h-5 w-5" />
                     </motion.div>
                   )}
                 </AnimatePresence>
               </Button>
 
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="text-gray-400 text-sm text-center mt-4"
+                transition={{ delay: 1 }}
+                className="space-y-2 text-center"
               >
-                Research typically takes 1-3 minutes depending on selected states
-              </motion.p>
+                <p className="text-muted-foreground text-xs md:text-sm">
+                  ⏱️ Research typically takes 1-3 minutes depending on selected states
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  🔒 Powered by OpenAI GPT-4 • Secure & Reliable
+                </p>
+              </motion.div>
             </motion.div>
           </form>
         </CardContent>

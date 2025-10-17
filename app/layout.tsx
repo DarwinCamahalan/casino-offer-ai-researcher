@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import { ReactQueryProvider } from '@/lib/providers/react-query-provider'
+import { ThemeProvider } from '@/lib/providers/theme-provider'
 import Sidebar from './_components/Sidebar'
 import Footer from './_components/Footer'
 
@@ -32,20 +33,27 @@ const RootLayout = ({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ReactQueryProvider>
-          <div className="flex min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-            {/* Sidebar */}
-            <Sidebar />
-            
-            {/* Main Content Area */}
-            <div className="flex-1 ml-72 flex flex-col min-h-screen">
-              <main className="flex-1 p-8">
-                {children}
-              </main>
-              <Footer />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange={false}
+        >
+          <ReactQueryProvider>
+            <div className="flex min-h-screen bg-background">
+              {/* Sidebar */}
+              <Sidebar />
+              
+              {/* Main Content Area */}
+              <div className="flex-1 lg:ml-72 flex flex-col min-h-screen">
+                <main className="flex-1 p-4 md:p-8">
+                  {children}
+                </main>
+                <Footer />
+              </div>
             </div>
-          </div>
-        </ReactQueryProvider>
+          </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

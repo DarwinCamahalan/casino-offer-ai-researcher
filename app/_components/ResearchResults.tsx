@@ -6,6 +6,7 @@
 
 import { motion } from 'framer-motion'
 import { ResearchResult } from '@/types'
+import { STATE_NAMES } from '@/types/casino/states'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -119,13 +120,13 @@ const ResearchResults = ({ results }: Props) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <Card className="bg-card/95 backdrop-blur-xl border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-purple-400" />
                 Missing Casinos
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-muted-foreground">
                 Licensed casinos not yet tracked in your database
               </CardDescription>
             </CardHeader>
@@ -136,8 +137,8 @@ const ResearchResults = ({ results }: Props) => {
                   return (
                     <div key={state}>
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge className="bg-purple-600">{state}</Badge>
-                        <span className="text-gray-400 text-sm">
+                        <Badge className="bg-purple-600">{STATE_NAMES[state as keyof typeof STATE_NAMES]}</Badge>
+                        <span className="text-muted-foreground text-sm">
                           {casinos.length} casino{casinos.length !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -150,18 +151,18 @@ const ResearchResults = ({ results }: Props) => {
                             transition={{ delay: idx * 0.05 }}
                             whileHover={{ x: 4 }}
                           >
-                            <Card className="bg-white/5 border-white/10">
+                            <Card className="bg-card/50 border-border">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1">
-                                    <h4 className="text-white font-semibold">{casino.name}</h4>
+                                    <h4 className="text-foreground font-semibold">{casino.name}</h4>
                                     {casino.brand && (
-                                      <p className="text-gray-400 text-sm mt-1">
+                                      <p className="text-muted-foreground text-sm mt-1">
                                         Brand: {casino.brand}
                                       </p>
                                     )}
                                     {casino.license_number && (
-                                      <p className="text-gray-500 text-xs mt-1">
+                                      <p className="text-muted-foreground text-xs mt-1">
                                         License: {casino.license_number}
                                       </p>
                                     )}
@@ -183,7 +184,7 @@ const ResearchResults = ({ results }: Props) => {
                         ))}
                       </div>
                       {state !== Object.keys(results.missing_casinos).filter(s => results.missing_casinos[s as keyof typeof results.missing_casinos].length > 0).pop() && (
-                        <Separator className="bg-white/10 mt-4" />
+                        <Separator className="bg-border mt-4" />
                       )}
                     </div>
                   )
@@ -201,13 +202,13 @@ const ResearchResults = ({ results }: Props) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <Card className="bg-card/95 backdrop-blur-xl border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Gift className="h-5 w-5 text-pink-400" />
                 New Promotional Offers
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-muted-foreground">
                 Recently discovered offers from AI research
               </CardDescription>
             </CardHeader>
@@ -221,16 +222,16 @@ const ResearchResults = ({ results }: Props) => {
                     transition={{ delay: idx * 0.05 }}
                     whileHover={{ scale: 1.02 }}
                   >
-                    <Card className="bg-gradient-to-br from-white/5 to-white/10 border-white/10 h-full">
+                    <Card className="bg-card/70 border-border h-full">
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div>
-                            <h4 className="text-white font-semibold">{offer.offer_title}</h4>
-                            <p className="text-purple-300 text-sm">{offer.casino_name}</p>
+                            <h4 className="text-foreground font-semibold">{offer.offer_title}</h4>
+                            <p className="text-purple-400 text-sm">{offer.casino_name}</p>
                           </div>
                           
                           {offer.offer_description && (
-                            <p className="text-gray-300 text-sm line-clamp-2">
+                            <p className="text-muted-foreground text-sm line-clamp-2">
                               {offer.offer_description}
                             </p>
                           )}
@@ -241,40 +242,30 @@ const ResearchResults = ({ results }: Props) => {
                                 {offer.bonus_amount}
                               </Badge>
                             )}
-                            {offer.match_percentage && (
+                            {offer.match_percentage && offer.match_percentage.toLowerCase() !== 'n/a' && !offer.match_percentage.toLowerCase().includes('n/a') && (
                               <Badge className="bg-blue-600">
                                 {offer.match_percentage}% Match
                               </Badge>
                             )}
-                            <Badge variant="outline" className="border-white/30 text-gray-300">
-                              {offer.state}
+                            <Badge variant="outline" className="border-border text-foreground">
+                              {STATE_NAMES[offer.state as keyof typeof STATE_NAMES]}
                             </Badge>
                           </div>
 
                           {offer.promo_code && (
-                            <div className="bg-black/30 rounded px-3 py-2 mt-2">
-                              <p className="text-xs text-gray-400">Promo Code</p>
-                              <p className="text-yellow-400 font-mono font-bold">
+                            <div className="bg-muted/50 rounded px-3 py-2 mt-2">
+                              <p className="text-xs text-muted-foreground">Promo Code</p>
+                              <p className="text-yellow-500 font-mono font-bold">
                                 {offer.promo_code}
                               </p>
                             </div>
                           )}
 
-                          <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-white/10">
-                            {offer.last_verified && (
-                              <span>Verified: {new Date(offer.last_verified).toLocaleDateString()}</span>
-                            )}
-                            {offer.source && (
-                              <a
-                                href={offer.source}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                              >
-                                Source <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
-                          </div>
+                          {offer.last_verified && (
+                            <div className="text-xs text-muted-foreground pt-2 border-t border-border">
+                              Verified: {new Date(offer.last_verified).toLocaleDateString()}
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -293,13 +284,13 @@ const ResearchResults = ({ results }: Props) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <Card className="bg-card/95 backdrop-blur-xl border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
                 Offer Comparisons
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-muted-foreground">
                 Better offers found compared to your existing database
               </CardDescription>
             </CardHeader>
@@ -312,13 +303,13 @@ const ResearchResults = ({ results }: Props) => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                   >
-                    <Card className="bg-white/5 border-white/10">
+                    <Card className="bg-card/50 border-border">
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="text-white font-semibold">{comparison.casino}</h4>
-                              <p className="text-gray-400 text-sm">{comparison.state}</p>
+                              <h4 className="text-foreground font-semibold">{comparison.casino}</h4>
+                              <p className="text-muted-foreground text-sm">{STATE_NAMES[comparison.state as keyof typeof STATE_NAMES]}</p>
                             </div>
                             {comparison.is_better && (
                               <Badge className="bg-green-600 flex items-center gap-1">
@@ -335,22 +326,22 @@ const ResearchResults = ({ results }: Props) => {
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-black/30 rounded p-3">
-                              <p className="text-gray-400 text-xs mb-2">Your Offer</p>
-                              <p className="text-white font-semibold">
+                            <div className="bg-muted/50 rounded p-3">
+                              <p className="text-muted-foreground text-xs mb-2">Your Offer</p>
+                              <p className="text-foreground font-semibold">
                                 {comparison.current_offer || 'No existing offer'}
                               </p>
                             </div>
 
                             <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded p-3 border border-purple-500/30">
-                              <p className="text-purple-300 text-xs mb-2">Discovered Offer</p>
-                              <p className="text-white font-semibold">{comparison.discovered_offer}</p>
+                              <p className="text-purple-400 text-xs mb-2">Discovered Offer</p>
+                              <p className="text-foreground font-semibold">{comparison.discovered_offer}</p>
                             </div>
                           </div>
 
                           {comparison.difference_notes && (
                             <div className="bg-blue-600/10 border border-blue-500/30 rounded p-3">
-                              <p className="text-blue-300 text-sm">
+                              <p className="text-blue-400 text-sm">
                                 <Zap className="h-4 w-4 inline mr-1" />
                                 {comparison.difference_notes}
                               </p>
@@ -358,7 +349,7 @@ const ResearchResults = ({ results }: Props) => {
                           )}
 
                           {comparison.confidence_score !== undefined && (
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-muted-foreground">
                               Confidence: {Math.round(comparison.confidence_score * 100)}%
                             </div>
                           )}
@@ -382,7 +373,7 @@ const ResearchResults = ({ results }: Props) => {
         >
           <Card className="bg-yellow-900/20 border-yellow-500/30">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-yellow-400" />
                 Research Limitations
               </CardTitle>
@@ -390,7 +381,7 @@ const ResearchResults = ({ results }: Props) => {
             <CardContent>
               <ul className="space-y-2">
                 {results.limitations.map((limitation, idx) => (
-                  <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
+                  <li key={idx} className="text-muted-foreground text-sm flex items-start gap-2">
                     <span className="text-yellow-400 mt-1">•</span>
                     <span>{limitation}</span>
                   </li>
@@ -407,30 +398,30 @@ const ResearchResults = ({ results }: Props) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
       >
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+        <Card className="bg-card/95 backdrop-blur-xl border-border">
           <CardContent className="p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
-                <p className="text-gray-400 text-xs">Timestamp</p>
-                <p className="text-white text-sm font-semibold mt-1">
+                <p className="text-muted-foreground text-xs">Timestamp</p>
+                <p className="text-foreground text-sm font-semibold mt-1">
                   {new Date(results.timestamp).toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">Execution Time</p>
-                <p className="text-white text-sm font-semibold mt-1">
+                <p className="text-muted-foreground text-xs">Execution Time</p>
+                <p className="text-foreground text-sm font-semibold mt-1">
                   {(results.execution_time_ms / 1000).toFixed(2)}s
                 </p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">API Calls</p>
-                <p className="text-white text-sm font-semibold mt-1">
+                <p className="text-muted-foreground text-xs">API Calls</p>
+                <p className="text-foreground text-sm font-semibold mt-1">
                   {results.api_calls_made}
                 </p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">Total Results</p>
-                <p className="text-white text-sm font-semibold mt-1">
+                <p className="text-muted-foreground text-xs">Total Results</p>
+                <p className="text-foreground text-sm font-semibold mt-1">
                   {totalMissingCasinos + results.new_offers.length + results.offer_comparisons.length}
                 </p>
               </div>
