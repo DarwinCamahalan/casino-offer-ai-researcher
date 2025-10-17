@@ -1,332 +1,661 @@
-# 🎰 Casino Offer AI Researcher# 🎰 Casino Offer AI Researcher
+# 🎰 Casino Offer AI Researcher# 🎰 Casino Offer AI Researcher# 🎰 Casino Offer AI Researcher
 
 
 
-An intelligent AI research assistant that identifies missing casinos and better promotional offers across **New Jersey (NJ), Michigan (MI), Pennsylvania (PA), and West Virginia (WV)** using GPT-4 and official regulatory sources.An intelligent AI research assistant that identifies missing casinos and better promotional offers across **New Jersey (NJ), Michigan (MI), Pennsylvania (PA), and West Virginia (WV)** using GPT-4 and official regulatory sources.
+> An intelligent AI-powered platform that discovers casino information and promotional offers across multiple states using GPT-4.
 
 
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)## 🎯 Overview
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)An intelligent AI research assistant that identifies missing casinos and better promotional offers across **New Jersey (NJ), Michigan (MI), Pennsylvania (PA), and West Virginia (WV)** using GPT-4 and official regulatory sources.An intelligent AI research assistant that identifies missing casinos and better promotional offers across **New Jersey (NJ), Michigan (MI), Pennsylvania (PA), and West Virginia (WV)** using GPT-4 and official regulatory sources.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)
 
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)This Next.js full-stack application uses OpenAI's GPT-4 to:
-
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-412991?logo=openai)
-
-1. **Discover Missing Casinos** - Find licensed/operational casinos not yet tracked in your database
-
-## 🎯 Overview2. **Research Promotional Offers** - Identify current casino promotions and bonuses
-
-3. **Compare Offers** - Analyze discovered offers vs. existing offers to find better deals
-
-This Next.js full-stack application uses OpenAI's GPT-4 to:4. **Generate Reports** - Produce clean, structured JSON reports for easy integration
+![OpenAI](https://img.shields.io/badge/Powered%20by-GPT--4-412991?logo=openai)
 
 
 
-1. **Discover Missing Casinos** - Find licensed/operational casinos not yet tracked in your database**Key Features:**
+---![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)## 🎯 Overview
 
-2. **Research Promotional Offers** - Identify current casino promotions and bonuses- ✨ AI-powered research (no traditional web scraping)
 
-3. **Compare Offers** - Analyze discovered offers vs. existing offers to find better deals- 🏛️ Prioritizes official sources (state gaming commissions)
 
-4. **Generate Reports** - Produce clean, structured JSON reports for easy integration- 🎯 Casino-only focus (excludes sports betting)
+## 🌟 What is This?![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)
 
-- ⚡ Fast, efficient API-based architecture
 
-**Key Features:**- 📊 Beautiful, responsive dashboard UI
 
-- ✨ AI-powered research (no traditional web scraping)- ⏰ Optional scheduled/cron job execution
+Casino Offer AI Researcher is a modern web application that uses artificial intelligence to help you discover and track casino information. Instead of manually searching multiple websites, our AI does the research for you, finding licensed casinos and their promotional offers across **New Jersey, Michigan, Pennsylvania, and West Virginia**.![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)This Next.js full-stack application uses OpenAI's GPT-4 to:
 
-- 🏛️ Prioritizes official sources (state gaming commissions)
 
-- 🎯 Casino-only focus (excludes sports betting)---
 
-- ⚡ Fast, efficient API-based architecture
+Think of it as your personal AI research assistant for the casino industry.![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-412991?logo=openai)
 
-- 📊 Beautiful, responsive dashboard UI with shadcn/ui## 📋 Table of Contents
 
-- 🔄 React Query for data fetching
+
+---1. **Discover Missing Casinos** - Find licensed/operational casinos not yet tracked in your database
+
+
+
+## ✨ Key Features## 🎯 Overview2. **Research Promotional Offers** - Identify current casino promotions and bonuses
+
+
+
+### 🔍 Smart Casino Discovery3. **Compare Offers** - Analyze discovered offers vs. existing offers to find better deals
+
+- **Find Missing Casinos** - Automatically identifies licensed casinos that you might not know about
+
+- **Official Sources** - Gets information from state gaming commissions for accuracyThis Next.js full-stack application uses OpenAI's GPT-4 to:4. **Generate Reports** - Produce clean, structured JSON reports for easy integration
+
+- **Real-time Updates** - Discovers current operational status and details
+
+
+
+### 🎁 Promotional Offer Intelligence
+
+- **Find Current Offers** - Discovers active welcome bonuses, free spins, and promotions1. **Discover Missing Casinos** - Find licensed/operational casinos not yet tracked in your database**Key Features:**
+
+- **Compare Offers** - Shows you when there are better deals than what you currently know
+
+- **Detailed Information** - Includes bonus amounts, requirements, and promo codes2. **Research Promotional Offers** - Identify current casino promotions and bonuses- ✨ AI-powered research (no traditional web scraping)
+
+
+
+### 📊 Beautiful Dashboard3. **Compare Offers** - Analyze discovered offers vs. existing offers to find better deals- 🏛️ Prioritizes official sources (state gaming commissions)
+
+- **Modern Interface** - Clean, easy-to-use design that works on any device
+
+- **Visual Charts** - See data through interactive graphs and visualizations4. **Generate Reports** - Produce clean, structured JSON reports for easy integration- 🎯 Casino-only focus (excludes sports betting)
+
+- **Progress Tracking** - Watch your research happen in real-time
+
+- **Easy Export** - Download results for your records- ⚡ Fast, efficient API-based architecture
+
+
+
+### ⚡ Powerful Capabilities**Key Features:**- 📊 Beautiful, responsive dashboard UI
+
+- **AI-Powered** - Uses GPT-4 for intelligent research (no web scraping)
+
+- **Multi-State Research** - Search one or all four states at once- ✨ AI-powered research (no traditional web scraping)- ⏰ Optional scheduled/cron job execution
+
+- **Confidence Scores** - Know how reliable each finding is
+
+- **Automated Scheduling** - Set it to research automatically on a schedule- 🏛️ Prioritizes official sources (state gaming commissions)
+
+
+
+---- 🎯 Casino-only focus (excludes sports betting)---
+
+
+
+## 🎯 How It Works- ⚡ Fast, efficient API-based architecture
+
+
+
+### 1️⃣ Choose What to Research- 📊 Beautiful, responsive dashboard UI with shadcn/ui## 📋 Table of Contents
+
+Select which states you're interested in (NJ, MI, PA, or WV) and what you want to find:
+
+- Missing casinos in your database- 🔄 React Query for data fetching
+
+- Current promotional offers
 
 - 💾 Zustand for state management- [Tech Stack](#-tech-stack)
 
-- [Project Structure](#-project-structure)
+### 2️⃣ AI Does the Research
 
----- [Prerequisites](#-prerequisites)
+Our GPT-4 powered system:- [Project Structure](#-project-structure)
 
-- [Installation](#-installation)
+- Consults official gaming commission sources
 
-## 🛠️ Tech Stack- [Configuration](#-configuration)
+- Researches casino websites for promotions---- [Prerequisites](#-prerequisites)
 
-- [Running the Application](#-running-the-application)
+- Verifies operational status
 
-- **Framework:** Next.js 14 (App Router)- [API Documentation](#-api-documentation)
+- Extracts detailed offer information- [Installation](#-installation)
+
+
+
+### 3️⃣ Get Organized Results## 🛠️ Tech Stack- [Configuration](#-configuration)
+
+Review your findings organized into:
+
+- **Missing Casinos** - Complete information for each new casino found- [Running the Application](#-running-the-application)
+
+- **Better Offers** - Side-by-side comparisons showing improvements
+
+- **New Promotions** - Fresh offers discovered during research- **Framework:** Next.js 14 (App Router)- [API Documentation](#-api-documentation)
+
+- **Confidence Scores** - How certain the AI is about each finding
 
 - **Language:** TypeScript 5.4- [Usage Guide](#-usage-guide)
 
+---
+
 - **AI Model:** OpenAI GPT-4 (gpt-4o)- [Scheduling](#-scheduling)
+
+## 💡 Who Can Use This?
 
 - **Styling:** Tailwind CSS + shadcn/ui- [Architecture](#-architecture)
 
-- **UI Components:** Radix UI primitives- [Evaluation Criteria](#-evaluation-criteria)
+### Casino Database Managers
 
-- **State Management:** Zustand- [Limitations](#-limitations)
+Keep your casino database complete and up-to-date with the latest licensed operations and ensure you're not missing any casinos in your coverage area.- **UI Components:** Radix UI primitives- [Evaluation Criteria](#-evaluation-criteria)
+
+
+
+### Affiliate Marketers- **State Management:** Zustand- [Limitations](#-limitations)
+
+Stay competitive by always knowing about the best promotional offers available. Share the most attractive deals with your audience.
 
 - **Data Fetching:** React Query (@tanstack/react-query)
 
-- **Icons:** Lucide React---
+### Market Researchers
 
-- **API Integration:** Xano API
+Analyze trends in casino promotions, compare offerings across states, and generate insights about the market.- **Icons:** Lucide React---
+
+
+
+### Casino Operators- **API Integration:** Xano API
+
+Monitor what your competitors are offering and identify opportunities to improve your promotional strategy.
 
 - **Deployment:** Vercel## 🛠️ Tech Stack
 
+---
 
+
+
+## 🚀 Getting Started
 
 ---- **Framework:** Next.js 14 (Full Stack)
 
-- **Language:** TypeScript
+### What You'll Need
 
-## 📋 Prerequisites- **AI Model:** OpenAI GPT-4 (gpt-4o)
+- A computer with internet connection- **Language:** TypeScript
 
-- **Styling:** Tailwind CSS
+- Node.js installed (version 18 or higher)
 
-Before you begin, ensure you have the following installed:- **API Calls:** Axios
-
-- **Scheduling:** node-cron
-
-- **Node.js** 18.x or higher- **Data Source:** Xano API
-
-- **npm** or **yarn**
-
-- **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/api-keys)---
+- An OpenAI API key (you can get one from OpenAI's website)## 📋 Prerequisites- **AI Model:** OpenAI GPT-4 (gpt-4o)
 
 
 
----## 📁 Project Structure
+### Quick Start- **Styling:** Tailwind CSS
 
 
+
+1. **Download the project**Before you begin, ensure you have the following installed:- **API Calls:** Axios
+
+   ```bash
+
+   git clone https://github.com/DarwinCamahalan/casino-offer-ai-researcher.git- **Scheduling:** node-cron
+
+   cd casino-offer-ai-researcher
+
+   ```- **Node.js** 18.x or higher- **Data Source:** Xano API
+
+
+
+2. **Install**- **npm** or **yarn**
+
+   ```bash
+
+   npm install- **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/api-keys)---
+
+   ```
+
+
+
+3. **Add your OpenAI key**
+
+   Create a file called `.env.local` and add:---## 📁 Project Structure
+
+   ```
+
+   OPENAI_API_KEY=your-key-here
+
+   ```
 
 ## 🚀 Installation```
 
-casino-offer-ai-researcher/
+4. **Run**
 
-1. **Clone the repository**├── pages/
+   ```bashcasino-offer-ai-researcher/
 
-│   ├── api/
+   npm run dev
+
+   ```1. **Clone the repository**├── pages/
+
+
+
+5. **Open in browser**│   ├── api/
+
+   Go to `http://localhost:3000`
 
 ```bash│   │   ├── ai/
 
+---
+
 git clone https://github.com/DarwinCamahalan/casino-offer-ai-researcher.git│   │   │   └── research.ts        # Main AI research endpoint
+
+## 📱 Using the Platform
 
 cd casino-offer-ai-researcher│   │   ├── offers/
 
-```│   │   │   └── existing.ts        # Fetch existing offers
+### Main Dashboard
 
-│   │   └── scheduler/
+Your home base showing:```│   │   │   └── existing.ts        # Fetch existing offers
 
-2. **Install dependencies**│   │       └── config.ts          # Scheduler configuration
+- Quick statistics about casinos and offers
 
-│   ├── _app.tsx                   # Next.js app wrapper
+- Visual charts showing data distribution│   │   └── scheduler/
 
-```bash│   └── index.tsx                  # Main dashboard page
+- Quick access to all features
 
-npm install├── components/
+- Recent research activity2. **Install dependencies**│   │       └── config.ts          # Scheduler configuration
 
-```│   ├── ResearchForm.tsx           # Research configuration form
 
-│   └── ResearchResults.tsx        # Results display component
 
-3. **Set up environment variables**├── services/
+### Research Page│   ├── _app.tsx                   # Next.js app wrapper
 
-│   ├── aiResearchService.ts       # AI research logic
+1. Click on "Research" in the sidebar
+
+2. Check the boxes for states you want to research```bash│   └── index.tsx                  # Main dashboard page
+
+3. Choose what to discover (casinos, offers, or both)
+
+4. Click "Start AI Research"npm install├── components/
+
+5. Watch the progress - typically takes 1-3 minutes
+
+6. View your results automatically```│   ├── ResearchForm.tsx           # Research configuration form
+
+
+
+### Analytics Dashboard│   └── ResearchResults.tsx        # Results display component
+
+See all your data visualized:
+
+- Casinos and offers by state (bar chart)3. **Set up environment variables**├── services/
+
+- Types of offers distribution (pie chart)
+
+- Discovery trends over time (line chart)│   ├── aiResearchService.ts       # AI research logic
+
+- Interactive tooltips with details
 
 Create a `.env.local` file in the root directory:│   ├── xanoService.ts             # Xano API integration
 
-│   ├── comparisonService.ts       # Offer comparison logic
+### Results Page
 
-```bash│   └── schedulerService.ts        # Cron job scheduler
+- Browse all findings in organized sections│   ├── comparisonService.ts       # Offer comparison logic
+
+- See confidence scores for transparency
+
+- Download results as JSON files```bash│   └── schedulerService.ts        # Cron job scheduler
+
+- Easy navigation between result categories
 
 cp .env.example .env.local├── types/
 
+---
+
 ```│   └── index.ts                   # TypeScript type definitions
+
+## 🎨 What Makes It Special
 
 ├── styles/
 
-Add your OpenAI API key:│   └── globals.css                # Global styles
+### User-Friendly Design
 
-├── .env.example                   # Environment variables template
+- Works great on phones, tablets, and computersAdd your OpenAI API key:│   └── globals.css                # Global styles
+
+- Smooth animations make it feel responsive
+
+- Clear visual feedback on what's happening├── .env.example                   # Environment variables template
+
+- Dark theme that's easy on the eyes
 
 ```env├── package.json
 
-OPENAI_API_KEY=your-openai-api-key-here├── tsconfig.json
+### Smart & Reliable
 
-```├── tailwind.config.js
+- Uses AI intelligence instead of basic web scrapingOPENAI_API_KEY=your-openai-api-key-here├── tsconfig.json
+
+- Focuses on official government sources
+
+- Provides clean, organized results```├── tailwind.config.js
+
+- Handles errors gracefully
 
 └── next.config.js
 
----```
+### Fast & Efficient
 
+- Optimized for quick loading---```
 
+- Smart management of AI requests
+
+- Saves recent results for instant access
+
+- Shows progress in real-time
 
 ## ▶️ Running the Application---
 
+---
 
+
+
+## 📊 Example Findings
 
 ### Development Mode## ✅ Prerequisites
 
+### When It Finds a Missing Casino
+
+```
+
+Casino: Golden Palace Casino
+
+State: New Jersey```bash- **Node.js** >= 18.0.0
+
+License: CIL-12345
+
+Website: goldenpalace.comnpm run dev- **npm** or **yarn**
+
+Status: Operational ✓
+
+``````- **OpenAI API Key** (with GPT-4 access)
 
 
-```bash- **Node.js** >= 18.0.0
 
-npm run dev- **npm** or **yarn**
+### When It Finds a Better Offer- Internet connection (for AI research)
 
-```- **OpenAI API Key** (with GPT-4 access)
+```
 
-- Internet connection (for AI research)
+Casino: Borgata Online CasinoThe application will be available at [http://localhost:3000](http://localhost:3000)
 
-The application will be available at [http://localhost:3000](http://localhost:3000)
+Your Current Offer: $50 free play + 100% up to $1,000
 
----
+Discovered Offer: $100 free play + 100% up to $1,200---
 
-### Production Build
+Better? Yes ✓
+
+Confidence: 90%### Production Build
+
+```
 
 ## 📦 Installation
 
+---
+
 ```bash
+
+## ⚙️ Advanced Features
 
 npm run build### 1. Clone the Repository
 
-npm start
+### Scheduled Research
 
-``````bash
+Set the system to automatically research for you:npm start
+
+- Daily updates at a specific time
+
+- Weekly comprehensive reports``````bash
+
+- Custom schedules (every 6 hours, etc.)
 
 git clone <your-repo-url>
 
-### Type Checkingcd casino-offer-ai-researcher
+### API Access
 
-```
+For developers who want to integrate:### Type Checkingcd casino-offer-ai-researcher
 
-```bash
+- RESTful API endpoints available
 
-npm run type-check### 2. Install Dependencies
+- Simple JSON request/response```
 
-```
+- Easy to integrate with existing tools
 
-```bash
+- Complete documentation included```bash
 
-### Lintingnpm install
 
-```
 
-```bash
+### Data Exportnpm run type-check### 2. Install Dependencies
 
-npm run lint### 3. Set Up Environment Variables
+- Download all results as JSON
 
-```
+- Structured and ready to import```
+
+- Includes timestamps and metadata
+
+- Perfect for further analysis```bash
+
+
+
+---### Lintingnpm install
+
+
+
+## 🛠️ Built With```
+
+
+
+- **Next.js 14** - Modern web framework```bash
+
+- **TypeScript** - For reliable code
+
+- **OpenAI GPT-4** - The AI brainnpm run lint### 3. Set Up Environment Variables
+
+- **Tailwind CSS** - Beautiful styling
+
+- **Framer Motion** - Smooth animations```
+
+- **Recharts** - Interactive charts
 
 Create a `.env` file in the root directory:
 
 ---
 
+---
+
+## 💡 Tips for Best Results
+
 ```bash
 
-## 📖 Usage Guidecp .env.example .env
+### Get the Most Accurate Data
 
-```
+- Run research during business hours when data is most current## 📖 Usage Guidecp .env.example .env
+
+- Check the confidence scores - higher is more reliable
+
+- Verify important findings with official sources```
+
+- Run regular updates since offers change frequently
 
 1. **Start the Application**
 
-   - Navigate to `http://localhost:3000`Edit `.env` and add your OpenAI API key:
+### Optimize Performance
 
-   - You'll see the main dashboard
+- Research one state at a time for faster results   - Navigate to `http://localhost:3000`Edit `.env` and add your OpenAI API key:
+
+- Use scheduling for regular, automated updates
+
+- Save important results right away   - You'll see the main dashboard
+
+- Keep an eye on your OpenAI API usage
 
 ```env
 
+---
+
 2. **Select States**OPENAI_API_KEY=sk-your-openai-api-key-here
+
+## ⚠️ Things to Know
 
    - Check the states you want to research (NJ, MI, PA, WV)XANO_API_URL=https://xhks-nxia-vlqr.n7c.xano.io/api:1ZwRS-f0/activeSUB
 
-   - At least one state must be selectedNODE_ENV=development
+### About Data Accuracy
 
-```
+- The AI provides excellent starting points for your research   - At least one state must be selectedNODE_ENV=development
+
+- Promotional offers can change quickly - verify before making decisions
+
+- Confidence scores help you judge reliability```
+
+- Always double-check critical business information
 
 3. **Start Research**
 
-   - Click the "Start Research" button---
+### About Usage
 
-   - The AI will begin researching casinos and offers
+- Uses the OpenAI API which has associated costs   - Click the "Start Research" button---
+
+- Typical research takes 1-3 minutes per session
+
+- Respects API rate limits automatically   - The AI will begin researching casinos and offers
+
+- Monitor your OpenAI account for usage
 
 ## ⚙️ Configuration
 
+---
+
 4. **View Results**
+
+## 🌐 Covered States
 
    - Results will display on the dedicated results page### OpenAI API Key
 
-   - See missing casinos, better offers, and new casino offers
+### New Jersey (NJ)
 
-   - Review confidence scores and detailed comparisonsGet your API key from [OpenAI Platform](https://platform.openai.com/api-keys).
-
-
-
----**Important:** Ensure your account has access to **GPT-4** (specifically `gpt-4o` model).
+Source: NJ Division of Gaming Enforcement   - See missing casinos, better offers, and new casino offers
 
 
+
+### Michigan (MI)   - Review confidence scores and detailed comparisonsGet your API key from [OpenAI Platform](https://platform.openai.com/api-keys).
+
+Source: Michigan Gaming Control Board
+
+
+
+### Pennsylvania (PA)
+
+Source: Pennsylvania Gaming Control Board---**Important:** Ensure your account has access to **GPT-4** (specifically `gpt-4o` model).
+
+
+
+### West Virginia (WV)
+
+Source: West Virginia Lottery Commission
 
 ## 🏗️ Project Structure### Xano API
 
+---
 
+
+
+## 📞 Get Help or Give Feedback
 
 ```The application fetches existing offers from:
 
+**Created by Darwin Camahalan**
+
 casino-offer-ai-researcher/```
 
-├── app/                      # Next.js 14 App Routerhttps://xhks-nxia-vlqr.n7c.xano.io/api:1ZwRS-f0/activeSUB
+- 📧 Email: camahalandarwin@gmail.com
 
-│   ├── api/                  # API routes```
+- 📱 Phone: +63 9754270609├── app/                      # Next.js 14 App Routerhttps://xhks-nxia-vlqr.n7c.xano.io/api:1ZwRS-f0/activeSUB
 
-│   │   └── ai/
+- 💼 LinkedIn: [linkedin.com/in/darwincamahalan](https://www.linkedin.com/in/darwincamahalan/)
 
-│   │       └── research/     # AI research endpointIf you need to change this, update the `XANO_API_URL` in your `.env` file.
+- 🐙 GitHub: [github.com/DarwinCamahalan](https://github.com/DarwinCamahalan)│   ├── api/                  # API routes```
 
-│   ├── results/              # Results page
 
-│   ├── layout.tsx            # Root layout---
 
-│   └── page.tsx              # Main dashboard
+Have questions? Found a bug? Want a new feature? Feel free to reach out!│   │   └── ai/
 
-├── components/               # React components## 🚀 Running the Application
 
-│   ├── ui/                   # shadcn/ui components
 
-│   ├── Footer.tsx            # Footer component### Development Mode
+---│   │       └── research/     # AI research endpointIf you need to change this, update the `XANO_API_URL` in your `.env` file.
 
-│   ├── ResearchForm.tsx      # Research form
 
-│   └── ResearchResults.tsx   # Results display```bash
 
-├── lib/                      # Utilities and servicesnpm run dev
+## 📄 License│   ├── results/              # Results page
 
-│   ├── providers/            # React providers```
 
-│   ├── services/             # Business logic
 
-│   │   ├── aiService.ts      # OpenAI integrationThe application will be available at: **http://localhost:3000**
+This project is open source and available under the MIT License.│   ├── layout.tsx            # Root layout---
 
-│   │   ├── comparisonService.ts
 
-│   │   └── xanoService.ts    # Xano API integration### Production Build
 
-│   ├── store/                # Zustand stores
+---│   └── page.tsx              # Main dashboard
 
-│   └── utils.ts              # Helper functions```bash
 
-├── types/                    # TypeScript typesnpm run build
 
-├── public/                   # Static assetsnpm start
+## 🙏 Credits├── components/               # React components## 🚀 Running the Application
 
-└── styles/                   # Global styles```
 
-```
+
+Special thanks to:│   ├── ui/                   # shadcn/ui components
+
+- **OpenAI** for the powerful GPT-4 API
+
+- **Vercel** for the Next.js framework│   ├── Footer.tsx            # Footer component### Development Mode
+
+- **shadcn** for beautiful UI components
+
+- All the **state gaming commissions** for providing public data│   ├── ResearchForm.tsx      # Research form
+
+
+
+---│   └── ResearchResults.tsx   # Results display```bash
+
+
+
+## 🔗 Helpful Links├── lib/                      # Utilities and servicesnpm run dev
+
+
+
+### Official Gaming Resources│   ├── providers/            # React providers```
+
+- [New Jersey Gaming Enforcement](https://www.nj.gov/oag/ge/)
+
+- [Michigan Gaming Control](https://www.michigan.gov/mgcb)│   ├── services/             # Business logic
+
+- [Pennsylvania Gaming Control](https://gamingcontrolboard.pa.gov/)
+
+- [West Virginia Lottery](https://www.wvlottery.com/)│   │   ├── aiService.ts      # OpenAI integrationThe application will be available at: **http://localhost:3000**
+
+
+
+### Learn More│   │   ├── comparisonService.ts
+
+- [OpenAI Platform](https://platform.openai.com/)
+
+- [Next.js Docs](https://nextjs.org/docs)│   │   └── xanoService.ts    # Xano API integration### Production Build
+
+
+
+---│   ├── store/                # Zustand stores
+
+
+
+<div align="center">│   └── utils.ts              # Helper functions```bash
+
+
+
+**Built with ❤️ using Next.js, TypeScript, and OpenAI GPT-4**├── types/                    # TypeScript typesnpm run build
+
+
+
+*Intelligent casino research made simple*├── public/                   # Static assetsnpm start
+
+
+
+⚡ 🎰 📊 🚀└── styles/                   # Global styles```
+
+
+
+</div>```
+
 
 ### Type Checking
 
