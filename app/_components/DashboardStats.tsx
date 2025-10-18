@@ -7,6 +7,12 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import dynamic from 'next/dynamic'
 import { TrendingUp, DollarSign, Database, Zap } from 'lucide-react'
 import { fetchExistingOffers, normalizeXanoOffers, extractCasinosFromOffers } from '@/lib/services/xanoService'
@@ -39,10 +45,11 @@ interface StatCardProps {
   change?: string
   icon: React.ReactNode
   gradient: string
+  tooltip?: string
 }
 
-function StatCard({ title, value, change, icon, gradient }: StatCardProps) {
-  return (
+function StatCard({ title, value, change, icon, gradient, tooltip }: StatCardProps) {
+  const card = (
     <motion.div
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: 'spring', stiffness: 300 }}
@@ -67,6 +74,21 @@ function StatCard({ title, value, change, icon, gradient }: StatCardProps) {
       </Card>
     </motion.div>
   )
+
+  if (tooltip) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {card}
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return card
 }
 
 const DashboardStats = () => {
@@ -597,32 +619,38 @@ const DashboardStats = () => {
     <div className="space-y-4 md:space-y-6">
       {/* Stats Grid - Cumulative across all research sessions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <StatCard
-          title="Total Unique Casinos"
-          value={dashboardData.totalCasinos}
-          change="Across all sessions"
-          icon={<Database className="h-6 w-6 md:h-8 md:w-8" />}
-          gradient="from-purple-600 to-purple-800"
-        />
-        <StatCard
-          title="Total Offers Found"
-          value={dashboardData.totalOffers}
-          change="Cumulative total"
-          icon={<DollarSign className="h-6 w-6 md:h-8 md:w-8" />}
-          gradient="from-pink-600 to-rose-800"
-        />
-        <StatCard
-          title="States Covered"
-          value={dashboardData.statesCount}
-          icon={<Database className="h-6 w-6 md:h-8 md:w-8" />}
-          gradient="from-blue-600 to-cyan-800"
-        />
-        <StatCard
-          title="Research Sessions"
-          value={dashboardData.researchCount}
-          icon={<Zap className="h-6 w-6 md:h-8 md:w-8" />}
-          gradient="from-green-600 to-emerald-800"
-        />
+        <TooltipProvider>
+          <StatCard
+            title="Total Unique Casinos"
+            value={dashboardData.totalCasinos}
+            change="Across all sessions"
+            icon={<Database className="h-6 w-6 md:h-8 md:w-8" />}
+            gradient="from-purple-600 to-purple-800"
+            tooltip="Unique casinos discovered across all research sessions"
+          />
+          <StatCard
+            title="Total Offers Found"
+            value={dashboardData.totalOffers}
+            change="Cumulative total"
+            icon={<DollarSign className="h-6 w-6 md:h-8 md:w-8" />}
+            gradient="from-pink-600 to-rose-800"
+            tooltip="Total promotional offers found from all research"
+          />
+          <StatCard
+            title="States Covered"
+            value={dashboardData.statesCount}
+            icon={<Database className="h-6 w-6 md:h-8 md:w-8" />}
+            gradient="from-blue-600 to-cyan-800"
+            tooltip="Number of US states with casino data (NJ, MI, PA, WV)"
+          />
+          <StatCard
+            title="Research Sessions"
+            value={dashboardData.researchCount}
+            icon={<Zap className="h-6 w-6 md:h-8 md:w-8" />}
+            gradient="from-green-600 to-emerald-800"
+            tooltip="Total number of AI research sessions completed"
+          />
+        </TooltipProvider>
       </div>
 
       {/* Charts Grid */}

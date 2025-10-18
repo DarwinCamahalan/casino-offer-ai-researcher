@@ -9,8 +9,15 @@ import { useState, useEffect } from 'react'
 export function useDataAvailability() {
   const [hasData, setHasData] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     checkDataAvailability()
     
     // Listen for storage events to refresh data availability
@@ -33,7 +40,7 @@ export function useDataAvailability() {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('dataAvailabilityChanged', handleDataChange)
     }
-  }, [])
+  }, [mounted])
 
   const checkDataAvailability = async () => {
     try {

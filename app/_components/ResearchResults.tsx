@@ -168,6 +168,7 @@ const ResearchResults = ({ results }: Props) => {
       {/* Missing Casinos by State */}
       {totalMissingCasinos > 0 && (
         <motion.div
+          id="missing-casinos"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -253,6 +254,7 @@ const ResearchResults = ({ results }: Props) => {
       {/* New Offers */}
       {results.new_offers.length > 0 && (
         <motion.div
+          id="new-offers"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -347,6 +349,7 @@ const ResearchResults = ({ results }: Props) => {
       {/* Offer Comparisons */}
       {results.offer_comparisons.length > 0 && (
         <motion.div
+          id="offer-comparisons"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
@@ -358,7 +361,7 @@ const ResearchResults = ({ results }: Props) => {
                 Offer Comparisons
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Better offers found compared to your existing database
+                Better offers found compared to your existing database and all previous research
               </CardDescription>
             </CardHeader>
             <CardContent>

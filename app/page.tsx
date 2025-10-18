@@ -11,15 +11,18 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import DashboardStats from './_components/DashboardStats'
-import { Search, TrendingUp, Database, Sparkles, ArrowRight } from 'lucide-react'
+import { Search, TrendingUp, Database, Sparkles, ArrowRight, History } from 'lucide-react'
 
 const HomePage = () => {
   const router = useRouter()
   const [hasData, setHasData] = useState<boolean | null>(null)
+  const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
     // Check if there's any data available
     const checkForData = async () => {
+      setIsChecking(true)
+      
       try {
         const storedResults = localStorage.getItem('research_results')
         
@@ -30,6 +33,7 @@ const HomePage = () => {
           
           if (hasCasinos || hasOffers) {
             setHasData(true)
+            setIsChecking(false)
             return
           }
         }
@@ -41,29 +45,50 @@ const HomePage = () => {
           
           if (data.success && data.data && data.data.length > 0) {
             setHasData(true)
+            setIsChecking(false)
             return
           }
         } catch (error) {
           console.error('Error fetching from API:', error)
         }
         
-        // No data available, redirect to research page
-        router.push('/research')
+        // No data available, redirect to research page after a brief delay
+        setHasData(false)
+        setTimeout(() => {
+          router.push('/research')
+        }, 100)
       } catch (error) {
         console.error('Error checking for data:', error)
-        router.push('/research')
+        setTimeout(() => {
+          router.push('/research')
+        }, 100)
+      } finally {
+        setIsChecking(false)
       }
     }
 
     checkForData()
   }, [router])
 
-  if (hasData === null) {
+  // Show loading state while checking for data
+  if (isChecking || hasData === null) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show brief message before redirect
+  if (hasData === false) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecting to research...</p>
         </div>
       </div>
     )
@@ -105,7 +130,7 @@ const HomePage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4"
       >
         <Link href="/research">
           <motion.div
@@ -118,6 +143,40 @@ const HomePage = () => {
                 <CardTitle className="text-white text-base md:text-lg">AI Research</CardTitle>
                 <CardDescription className="text-purple-100 text-sm">
                   Discover missing casinos and better offers
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        </Link>
+
+        <Link href="/database">
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="cursor-pointer h-full"
+          >
+            <Card className="bg-gradient-to-br from-indigo-600 to-purple-800 border-0 shadow-lg h-full">
+              <CardHeader className="p-4 md:p-6">
+                <Database className="h-6 w-6 md:h-8 md:w-8 text-white mb-2" />
+                <CardTitle className="text-white text-base md:text-lg">Database</CardTitle>
+                <CardDescription className="text-indigo-100 text-sm">
+                  View existing offers from Xano
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        </Link>
+
+        <Link href="/history">
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="cursor-pointer h-full"
+          >
+            <Card className="bg-gradient-to-br from-orange-600 to-red-800 border-0 shadow-lg h-full">
+              <CardHeader className="p-4 md:p-6">
+                <History className="h-6 w-6 md:h-8 md:w-8 text-white mb-2" />
+                <CardTitle className="text-white text-base md:text-lg">History</CardTitle>
+                <CardDescription className="text-orange-100 text-sm">
+                  View past research sessions
                 </CardDescription>
               </CardHeader>
             </Card>

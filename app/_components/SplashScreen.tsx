@@ -10,18 +10,24 @@ import { Zap } from 'lucide-react'
 
 const SplashScreen = () => {
   const [isVisible, setIsVisible] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Hide splash screen after 2 seconds
+    setMounted(true)
+    
+    // Hide splash screen after minimum display time
     const timer = setTimeout(() => {
       setIsVisible(false)
-    }, 2000)
+    }, 1500) // Reduced from 2000ms to 1500ms
 
     return () => clearTimeout(timer)
   }, [])
 
+  // Don't render on server
+  if (!mounted) return null
+
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
           initial={{ opacity: 1 }}
@@ -38,7 +44,7 @@ const SplashScreen = () => {
             }}
             className="flex flex-col items-center gap-6"
           >
-            {/* Logo with gradient background */}
+     
             <motion.div
               animate={{ 
                 rotate: [0, 360],
@@ -54,11 +60,10 @@ const SplashScreen = () => {
               <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl">
                 <Zap className="h-14 w-14 text-white" />
               </div>
-              {/* Glow effect */}
+   
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-xl opacity-50 -z-10" />
             </motion.div>
 
-            {/* Text */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -73,7 +78,7 @@ const SplashScreen = () => {
               </p>
             </motion.div>
 
-            {/* Loading indicator */}
+         
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '200px' }}

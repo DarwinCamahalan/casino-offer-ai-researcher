@@ -7,9 +7,20 @@ import { Casino } from '../casino/casino'
 import { PromotionalOffer, OfferComparison } from '../casino/offer'
 
 export interface XanoOffer {
-  id: number
+  casinodb_id: number
+  Name?: string  // Casino name from API
+  Offer_Name?: string  // Offer title from API
+  offer_type?: string
+  Expected_Deposit?: number
+  Expected_Bonus?: number
+  states_id?: number
+  state?: {
+    Name: string
+    Abbreviation: string
+  }
+  // Legacy fields for backward compatibility
+  id?: number
   casino_name?: string
-  state?: string
   offer_title?: string
   offer_description?: string
   bonus_amount?: string
@@ -35,6 +46,7 @@ export interface ResearchRequest {
   include_offer_research?: boolean
   force_refresh?: boolean
   exclude_casino_websites?: string[] // Previously researched casino websites to exclude
+  historical_offers?: PromotionalOffer[] // Historical offers from previous research for comparison
 }
 
 export interface ErrorResponse {

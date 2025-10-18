@@ -23,6 +23,7 @@ const ResearchLoading = ({
 }: Props) => {
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
+  const [elapsedTime, setElapsedTime] = useState(0)
 
   // Define all possible steps
   const allSteps = [
@@ -30,28 +31,28 @@ const ResearchLoading = ({
       id: 'fetching',
       label: 'Fetching existing data', 
       icon: <Database className="h-5 w-5" />, 
-      duration: 15,
+      duration: 10,
       alwaysShow: true
     },
     { 
       id: 'discovering',
       label: 'Discovering casinos', 
       icon: <Sparkles className="h-5 w-5" />, 
-      duration: 40,
+      duration: 35,
       showWhen: includeCasinoDiscovery
     },
     { 
       id: 'researching',
       label: 'Researching offers', 
       icon: <TrendingUp className="h-5 w-5" />, 
-      duration: 45,
+      duration: 50,
       showWhen: includeOfferResearch
     },
     { 
       id: 'comparing',
       label: 'Comparing results', 
       icon: <CheckCircle2 className="h-5 w-5" />, 
-      duration: 20,
+      duration: 15,
       showWhen: includeCasinoDiscovery || includeOfferResearch
     },
   ]
@@ -61,24 +62,44 @@ const ResearchLoading = ({
     return allSteps.filter(step => step.alwaysShow || step.showWhen)
   }, [includeCasinoDiscovery, includeOfferResearch])
 
+  // Calculate total duration from steps
+  const totalDuration = useMemo(() => {
+    return steps.reduce((acc, step) => acc + step.duration, 0)
+  }, [steps])
+
   useEffect(() => {
-    const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0)
     let elapsed = 0
-    let stepIndex = 0
     
     const interval = setInterval(() => {
       elapsed += 1
-      const newProgress = Math.min((elapsed / totalDuration) * 100, 95)
+      setElapsedTime(elapsed)
+      
+      // Calculate progress with a more accurate curve
+      // Allow progress to reach 98% instead of stopping at 95%
+      let calculatedProgress = (elapsed / totalDuration) * 100
+      
+      // Apply easing to make it feel more natural
+      // Slow down as we approach completion
+      if (calculatedProgress > 90) {
+        calculatedProgress = 90 + (calculatedProgress - 90) * 0.5
+      }
+      
+      const newProgress = Math.min(calculatedProgress, 98)
       setProgress(newProgress)
 
-      // Update current step
+      // Update current step more accurately
       let cumulativeDuration = 0
       for (let i = 0; i < steps.length; i++) {
         cumulativeDuration += steps[i].duration
-        if (elapsed <= cumulativeDuration) {
+        if (elapsed < cumulativeDuration) {
           setCurrentStep(i)
           break
         }
+      }
+      
+      // Ensure we're on the last step near completion
+      if (elapsed >= totalDuration * 0.95) {
+        setCurrentStep(steps.length - 1)
       }
 
       if (elapsed >= totalDuration) {
@@ -87,7 +108,7 @@ const ResearchLoading = ({
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [steps])
+  }, [steps, totalDuration])
 
   return (
     <motion.div
@@ -208,7 +229,13 @@ const ResearchLoading = ({
 
             {/* Estimated Time */}
             <p className="text-muted-foreground text-xs mt-2">
-              Estimated time remaining: {Math.max(0, estimatedTime - Math.round((progress / 100) * estimatedTime))}s
+              {progress < 98 ? (
+                <>
+                  Estimated time remaining: {Math.max(1, totalDuration - elapsedTime)}s
+                </>
+              ) : (
+                <>Finalizing results...</>
+              )}
             </p>
           </div>
         </CardContent>

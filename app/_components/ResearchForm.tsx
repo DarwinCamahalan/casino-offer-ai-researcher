@@ -70,6 +70,7 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
     localStorage.removeItem('researched_casinos')
     localStorage.removeItem('research_history')
     localStorage.removeItem('research_results')
+    localStorage.removeItem('latest_research_result')
     sessionStorage.removeItem('research_results')
     
     // Reset state

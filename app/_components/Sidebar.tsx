@@ -11,6 +11,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { 
   LayoutDashboard, 
   Search, 
@@ -18,7 +24,8 @@ import {
   Database,
   Zap,
   Menu,
-  X
+  X,
+  History
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -44,6 +51,11 @@ const navItems: NavItem[] = [
     badge: 'AI',
   },
   {
+    label: 'History',
+    href: '/history',
+    icon: <History className="h-5 w-5" />,
+  },
+  {
     label: 'Analytics',
     href: '/analytics',
     icon: <BarChart3 className="h-5 w-5" />,
@@ -60,10 +72,11 @@ interface StatCardProps {
   value: string | number
   icon: React.ReactNode
   color: string
+  tooltip?: string
 }
 
-function StatCard({ label, value, icon, color }: StatCardProps) {
-  return (
+function StatCard({ label, value, icon, color, tooltip }: StatCardProps) {
+  const card = (
     <motion.div
       whileHover={{ scale: 1.02 }}
       className={`p-4 rounded-lg bg-gradient-to-br ${color} shadow-lg`}
@@ -77,6 +90,21 @@ function StatCard({ label, value, icon, color }: StatCardProps) {
       </div>
     </motion.div>
   )
+
+  if (tooltip) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {card}
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return card
 }
 
 const Sidebar = () => {
@@ -84,8 +112,15 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { hasData } = useDataAvailability()
   const [stats, setStats] = useState({ states: 0, offers: 0, casinos: 0 })
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     const loadStats = () => {
       try {
         const storedResults = localStorage.getItem('research_results')
@@ -122,7 +157,7 @@ const Sidebar = () => {
     // Listen for storage changes
     window.addEventListener('storage', loadStats)
     return () => window.removeEventListener('storage', loadStats)
-  }, [])
+  }, [mounted])
 
   const sidebarContent = (
     <>
@@ -146,87 +181,105 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navItems.map((item, index) => {
-          const isActive = pathname === item.href
-          const isDisabled = !hasData && item.href !== '/research'
-          
-          return (
-            <div key={item.href}>
-              {isDisabled ? (
-                <motion.div
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg opacity-50 cursor-not-allowed text-muted-foreground"
-                  title="Complete research first to access this page"
-                >
-                  <div className="flex items-center gap-3">
-                    {item.icon}
-                    <span className="font-medium">{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <Badge className="bg-yellow-500 text-black text-xs font-bold">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </motion.div>
-              ) : (
-                <Link href={item.href} onClick={() => setIsOpen(false)}>
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ x: 4 }}
-                    className={cn(
-                      'flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer group',
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-primary/25'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      {item.icon}
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <Badge className="bg-yellow-500 text-black text-xs font-bold">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </motion.div>
-                </Link>
-              )}
-            </div>
-          )
-        })}
+        <TooltipProvider>
+          {navItems.map((item, index) => {
+            const isActive = pathname === item.href
+            const isDisabled = !hasData && item.href !== '/research' && item.href !== '/database'
+            
+            return (
+              <div key={item.href}>
+                {isDisabled ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.div
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg opacity-50 cursor-not-allowed text-muted-foreground"
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.icon}
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <Badge className="bg-yellow-500 text-black text-xs font-bold">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </motion.div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Complete a research session first to access this page</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Link href={item.href} onClick={() => setIsOpen(false)}>
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ x: 4 }}
+                      className={cn(
+                        'flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer group',
+                        isActive
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-primary/25'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <Badge className="bg-yellow-500 text-black text-xs font-bold">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </motion.div>
+                  </Link>
+                )}
+              </div>
+            )
+          })}
+        </TooltipProvider>
       </nav>
 
       {/* Quick Stats */}
       <div className="p-4 space-y-3 border-t border-border">
-        <h3 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-          Quick Stats
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+            Quick Stats
+          </h3>
+          {hasData && (
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/50 text-[10px] px-1.5 py-0.5">
+              Latest
+            </Badge>
+          )}
+        </div>
         {hasData ? (
-          <>
+          <TooltipProvider>
             <StatCard
               label="States Covered"
               value={stats.states}
               icon={<Database className="h-4 w-4" />}
               color="from-blue-600 to-cyan-600"
+              tooltip="Number of US states with discovered casinos"
             />
             <StatCard
               label="Active Offers"
               value={stats.offers}
               icon={<Zap className="h-4 w-4" />}
               color="from-pink-600 to-rose-600"
+              tooltip="Total promotional offers found in latest research"
             />
             <StatCard
               label="Total Casinos"
               value={stats.casinos}
               icon={<Database className="h-4 w-4" />}
               color="from-purple-600 to-pink-600"
+              tooltip="Total unique casinos discovered across all states"
             />
-          </>
+          </TooltipProvider>
         ) : (
           <div className="p-4 bg-muted/50 rounded-lg text-center">
             <p className="text-xs text-muted-foreground">
@@ -259,7 +312,7 @@ const Sidebar = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="lg:hidden fixed top-4 left-4 z-50"
+        className="lg:hidden fixed top-4 right-4 z-50"
       >
         <Button
           variant="outline"

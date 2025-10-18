@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResearchForm from '../_components/ResearchForm'
 import ResearchLoading from '../_components/ResearchLoading'
-import { ResearchRequest, ApiResponse, ResearchResult } from '@/types'
+import { ResearchRequest, ApiResponse, ResearchResult, PromotionalOffer } from '@/types'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 
@@ -32,10 +32,34 @@ const ResearchPage = () => {
       
       console.log(`Found ${researchedCasinos.length} previously researched casinos`)
       
-      // Add excluded casinos to request
+      // Extract all historical offers from research history
+      const historyKey = 'research_history'
+      const storedHistory = localStorage.getItem(historyKey)
+      const historicalOffers: PromotionalOffer[] = []
+      
+      if (storedHistory) {
+        try {
+          const history = JSON.parse(storedHistory)
+          console.log(`Loading historical data from ${history.length} research sessions`)
+          
+          // Extract all offers from historical research
+          history.forEach((session: any) => {
+            if (session.newOffers && Array.isArray(session.newOffers)) {
+              historicalOffers.push(...session.newOffers)
+            }
+          })
+          
+          console.log(`Extracted ${historicalOffers.length} historical offers for comparison`)
+        } catch (err) {
+          console.error('Failed to parse research history:', err)
+        }
+      }
+      
+      // Add excluded casinos and historical offers to request
       const enhancedRequest: ResearchRequest = {
         ...request,
-        exclude_casino_websites: researchedCasinos
+        exclude_casino_websites: researchedCasinos,
+        historical_offers: historicalOffers
       }
 
       const response = await fetch('/api/ai/research', {
@@ -52,8 +76,9 @@ const ResearchPage = () => {
         throw new Error(data.error?.message || 'Research failed')
       }
 
-      // Store results in localStorage
+      // Store results in localStorage as both current and latest
       localStorage.setItem('research_results', JSON.stringify(data.data))
+      localStorage.setItem('latest_research_result', JSON.stringify(data.data))
       
       // Update researched casinos list
       const newlyDiscoveredCasinos = Object.values(data.data.missing_casinos)
@@ -68,7 +93,6 @@ const ResearchPage = () => {
       }
       
       // Update research history with detailed data
-      const historyKey = 'research_history'
       const existingHistory = localStorage.getItem(historyKey)
       const history = existingHistory ? JSON.parse(existingHistory) : []
       

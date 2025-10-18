@@ -19,12 +19,14 @@
   - [Installation](#installation)
   - [Environment Variables](#environment-variables)
 - [Project Structure](#-project-structure)
+- [User Interface](#-user-interface)
 - [API Documentation](#-api-documentation)
 - [Architecture](#-architecture)
 - [How It Works](#-how-it-works)
 - [Usage Guide](#-usage-guide)
 - [Development](#-development)
 - [Deployment](#-deployment)
+- [Recent Updates](#-recent-updates)
 - [Limitations & Considerations](#-limitations--considerations)
 
 ---
@@ -37,8 +39,8 @@ Casino Offer AI Researcher is an intelligent research tool that helps identify g
 
 1. **Casino Discovery**: Identifies licensed/operational casinos in NJ, MI, PA, and WV using AI research
 2. **Promotional Research**: Discovers current casino promotional offers for both existing and new casinos
-3. **Smart Comparison**: Compares discovered offers with existing database to identify better deals
-4. **Clean Reporting**: Presents findings in an easy-to-review, actionable format
+3. **Smart Comparison**: Compares discovered offers with existing database AND all historical research data
+4. **Clean Reporting**: Presents findings in an easy-to-review, actionable format with section navigation
 
 ### Project Context
 
@@ -67,21 +69,25 @@ This is a proof-of-concept demonstrating effective AI integration for intelligen
 
 ### 📊 **Intelligent Comparisons**
 - Side-by-side comparison of current vs. discovered offers
+- **Enhanced**: Now compares against BOTH Xano database AND all historical research
 - Highlights better bonuses, improved terms, lower wagering
 - Confidence scores for reliability assessment
 - Shows alternative offers when uncertain
 
 ### 💻 **Modern Dashboard**
-- Real-time research progress tracking
+- Real-time research progress tracking with accurate completion estimates
 - Interactive analytics with charts and trends
 - Cumulative statistics across all research sessions
-- Export results to JSON
+- **Export**: Download results as JSON or CSV
+- **Section Navigation**: Quick jump to Missing Casinos, New Offers, or Comparisons
+- **Latest Badge**: Visual indicator for most recent research results
 - Dark/light theme support
 
 ### ⚡ **Advanced Capabilities**
 - **Duplicate Prevention**: Tracks researched casinos to avoid rediscovery
 - **Batch Processing**: Handles multiple states/casinos with rate limiting
-- **Scheduled Execution**: API ready for cron jobs or automated scheduling
+- **Historical Tracking**: Complete research history with timestamp tracking
+- **Smart Search**: Debounced database search with instant filtering
 - **Data Persistence**: localStorage for results, history, and exclusions
 
 ---
@@ -195,6 +201,53 @@ NODE_ENV=development
 **Xano API:**
 - Already provided in the project requirements
 - No authentication required for this endpoint
+
+---
+
+## 🎨 User Interface
+
+### Dashboard (Homepage)
+- **Quick Stats Panel**: Shows States Covered, Active Offers, and Total Casinos with "Latest" indicator
+- **Interactive Analytics**: ECharts visualizations for research trends
+- **Theme Toggle**: Switch between light and dark modes
+- **Responsive Sidebar**: Collapsible navigation for mobile devices
+
+### Research Page
+- **State Selection**: Multi-select checkboxes for NJ, MI, PA, WV
+- **Real-time Progress**: 
+  - 4-stage progress tracker (Discovering → Researching → Comparing → Finalizing)
+  - Accurate percentage completion (0% → 98%)
+  - Live time estimates based on actual progress
+  - Current operation indicator
+- **Smart Loading**: Prevents premature completion display
+
+### Results Page
+- **Section Navigation**: Sticky navigation bar with quick jump buttons
+  - 🏢 Missing Casinos
+  - 🎁 New Offers  
+  - 📈 Comparisons
+- **Export Options**: 
+  - Download as CSV (for spreadsheets)
+  - Download as JSON (for data processing)
+- **Status Indicator**: "Latest" badge for current results, timestamp for historical
+- **Gradient Design**: Purple-to-blue gradient matching project theme
+
+### Database Page
+- **Live Search**: Debounced search with instant filtering (300ms delay)
+- **Offer Cards**: Clean 2-column grid layout
+- **Casino Details**: Name, bonus info, wagering requirements, promo codes
+- **State Badges**: Color-coded state indicators
+
+### History Page
+- **Timeline View**: All past research sessions with timestamps
+- **Quick Access**: Click any session to view detailed results
+- **Session Info**: Shows discovery counts for each research run
+
+### Features Across All Pages
+- **Smooth Animations**: Framer Motion transitions
+- **Frosted Glass Effects**: Modern backdrop blur styling
+- **Responsive Design**: Mobile-first approach
+- **Accessibility**: Keyboard navigation and screen reader support
 
 ---
 
@@ -676,26 +729,35 @@ for (let i = 0; i < casinos.length; i += concurrency) {
 
 2. **Navigate to Research page**
    - Visit `http://localhost:3000/research`
+   - Or click "New Research" from sidebar
 
 3. **Configure your research**
-   - Select states (e.g., New Jersey)
+   - Select states (e.g., New Jersey, Michigan, Pennsylvania)
    - Enable "Discover Missing Casinos"
    - Enable "Research Promotional Offers"
    - Click "Start AI Research"
 
 4. **Monitor progress**
-   - Watch real-time progress tracking
-   - Shows: Fetching data → Discovering casinos → Researching offers
+   - Watch real-time progress tracking with 4 stages:
+     - 🔍 **Discovering Casinos** - Finding licensed casinos per state
+     - 🎰 **Researching Offers** - Gathering promotional details
+     - 📊 **Comparing Results** - Analyzing against database + history
+     - ✅ **Finalizing** - Preparing results
+   - Progress reaches 98% with accurate time estimates
+   - Shows current operation and estimated completion time
 
 5. **Review results**
    - Automatically redirected to `/results`
-   - View missing casinos by state
-   - See offer comparisons (current vs. discovered)
-   - Review new promotional offers
+   - **"Latest" badge** indicates you're viewing most recent research
+   - Use **Section Navigation** bar to jump between:
+     - 🏢 Missing Casinos
+     - 🎁 New Offers
+     - 📈 Comparisons
 
 6. **Export data**
-   - Click "Download JSON" button
-   - Get structured data for further analysis
+   - **CSV**: Download as spreadsheet (includes all categories)
+   - **JSON**: Download for programmatic processing
+   - Both buttons available in section navigation bar
 
 ### Understanding Results
 
@@ -703,19 +765,20 @@ for (let i = 0; i < casinos.length; i += concurrency) {
 ```
 Shows casinos NOT in your Xano database:
 - Casino name
-- State
+- State with color-coded badge
 - Website URL (clickable)
 - License number (if available)
 - Operational status
+- Source of information
 ```
 
 #### Offer Comparisons Section
 ```
-Side-by-side comparison:
-- Your Offer: What's in Xano database
-- Discovered Offer: What AI found
+Side-by-side comparison (checks database + historical research):
+- Your Offer: What's in Xano database OR previous research
+- Discovered Offer: What AI found this session
 - Badge: "Better Offer" if discovered is superior
-- Difference Notes: Explanation of changes
+- Difference Notes: Detailed explanation of improvements
 - Confidence Score: Reliability (0-100%)
 ```
 
@@ -726,6 +789,7 @@ All discovered offers:
 - Casino name and state
 - Bonus amount (e.g., $1000)
 - Match percentage (e.g., 100%)
+- Wagering requirements
 - Promo code
 - Website link
 - Verification date
@@ -734,12 +798,39 @@ All discovered offers:
 ### Dashboard Analytics
 
 Navigate to homepage (`/`) to see:
+- **Quick Stats** (Sidebar): Shows "Latest" badge with:
+  - States Covered
+  - Active Offers
+  - Total Casinos
 - **Total Unique Casinos**: Cumulative across all sessions
 - **Total Offers Found**: Sum of all discovered offers
 - **Research Sessions**: Count of completed research runs
 - **Cumulative Growth Chart**: Per-session vs. cumulative totals
 - **State Distribution**: Casinos and offers by state
 - **Offer Type Breakdown**: Pie chart of promotional categories
+
+### Database Page
+
+Access via "View Database" button in results page:
+- **Search**: Type to filter offers instantly (300ms debounce)
+- **Offer Cards**: Clean 2-column layout with:
+  - Casino name
+  - Bonus details
+  - Wagering requirements
+  - Promo codes
+  - State badges
+- Smooth animations with Framer Motion
+
+### History Page
+
+View all past research sessions:
+- Click "History" in sidebar
+- See timeline of all research runs
+- Each entry shows:
+  - Timestamp
+  - States researched
+  - Discovery counts
+- Click any session to view full results
 
 ### Managing Researched Casinos
 
@@ -820,6 +911,49 @@ npx tsc --noEmit     # Check TypeScript types
 - **File Structure**: One component per file, index.ts for exports
 - **Error Handling**: Try-catch blocks with proper error messages
 - **Logging**: console.log for development, remove in production
+
+---
+
+## 🆕 Recent Updates
+
+### Version 2.0 - Enhanced Research & UI (October 2025)
+
+#### Research Improvements
+- **Historical Comparison**: Offer comparisons now check against BOTH Xano database AND all previous research data
+- **Accurate Progress**: Research loading now reaches 98% with precise time estimates
+- **Step Timing**: Improved duration calculations for each research phase
+
+#### UI/UX Enhancements
+- **Section Navigation**: Added sticky quick-jump navigation bar with gradient styling
+  - Quick access to Missing Casinos, New Offers, and Comparisons sections
+  - Smooth scroll animation with offset for fixed headers
+- **Export Formats**: 
+  - CSV export for spreadsheet analysis
+  - JSON export for programmatic processing
+- **Latest Indicators**: Green "Latest" badges on:
+  - Sidebar Quick Stats
+  - Results page header (replacing date/time for current results)
+- **Visual Improvements**:
+  - Gradient background on section jumper (purple-to-blue theme)
+  - Frosted glass effects with backdrop blur
+  - Consolidated action buttons in navigation bar
+
+#### Performance Optimizations
+- **Search Debouncing**: Database search now uses 300ms debounce to prevent lag
+- **Animation Fixes**: Removed staggered delays that caused duplicate results display
+- **Grid Layout**: Changed database cards from 3 to 2 columns for better readability
+
+#### Navigation Updates
+- Removed database link from sidebar
+- Added database access button in results page
+- Improved routing between pages
+- Better breadcrumb navigation
+
+#### Code Quality
+- Added comprehensive TypeScript types for all features
+- Improved component modularity
+- Better state management with React hooks
+- Enhanced error handling and loading states
 
 ---
 

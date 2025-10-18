@@ -143,16 +143,23 @@ export async function POST(request: NextRequest) {
       limitations.push('Promotional offer research was disabled for this research run')
     }
 
-    // Step 5: Compare offers
+    // Step 5: Compare offers with both Xano database and historical research data
+    const historicalOffers = requestData.historical_offers || [];
+    console.log(`Comparing with ${historicalOffers.length} historical offers from previous research`);
+    
     const offerComparisons = include_offer_research
-      ? compareOffers(discoveredOffers, existingOffers)
+      ? compareOffers(discoveredOffers, existingOffers, historicalOffers)
       : []
 
+    // New offers should be checked against all sources (Xano + historical)
+    const allKnownOffers = [...existingOffers, ...historicalOffers];
     const newOffers = include_offer_research
-      ? findNewOffers(discoveredOffers, existingOffers)
+      ? findNewOffers(discoveredOffers, allKnownOffers)
       : []
 
     console.log(`Generated ${offerComparisons.length} offer comparisons`)
+    console.log(`  - Better offers: ${offerComparisons.filter(c => c.is_better).length}`)
+    console.log(`  - New offers: ${newOffers.length}`)
 
     // Step 6: Build result
     const executionTime = Date.now() - startTime

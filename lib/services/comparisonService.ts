@@ -45,27 +45,49 @@ export function groupCasinosByState(casinos: Casino[]): Record<USState, Casino[]
 }
 
 /**
- * Compare discovered offers with existing offers
+ * Compare discovered offers with existing offers from both Xano database and historical research
  */
 export function compareOffers(
   discoveredOffers: PromotionalOffer[],
-  existingOffers: PromotionalOffer[]
+  existingOffers: PromotionalOffer[],
+  historicalOffers?: PromotionalOffer[]
 ): OfferComparison[] {
   const comparisons: OfferComparison[] = [];
 
   console.log(`\n=== OFFER COMPARISON DEBUG ===`);
   console.log(`Discovered offers: ${discoveredOffers.length}`);
-  console.log(`Existing offers: ${existingOffers.length}`);
+  console.log(`Existing offers (Xano): ${existingOffers.length}`);
+  console.log(`Historical offers: ${historicalOffers?.length || 0}`);
+
+  // Combine existing offers from Xano and historical research
+  const allExistingOffers = [...existingOffers];
+  if (historicalOffers && historicalOffers.length > 0) {
+    allExistingOffers.push(...historicalOffers);
+  }
 
   // Create a map of existing offers by casino and state
+  // Keep the best offer if there are duplicates
   const existingOffersMap = new Map<string, PromotionalOffer>();
-  existingOffers.forEach((offer) => {
+  allExistingOffers.forEach((offer) => {
     const key = normalizeCasinoName(offer.casino_name, offer.state);
-    existingOffersMap.set(key, offer);
-    console.log(`Existing: "${offer.casino_name}" (${offer.state}) -> key: "${key}"`);
+    const existing = existingOffersMap.get(key);
+    
+    // If we already have an offer, keep the one with higher value
+    if (existing) {
+      const existingValue = extractNumericValue(existing.bonus_amount) || 0;
+      const newValue = extractNumericValue(offer.bonus_amount) || 0;
+      
+      if (newValue > existingValue) {
+        existingOffersMap.set(key, offer);
+        console.log(`Updated best offer for "${offer.casino_name}" (${offer.state}) -> $${newValue} > $${existingValue}`);
+      }
+    } else {
+      existingOffersMap.set(key, offer);
+      console.log(`Added: "${offer.casino_name}" (${offer.state}) [${offer.source || 'Unknown'}] -> key: "${key}"`);
+    }
   });
 
-  console.log(`\nExisting offers map keys:`, Array.from(existingOffersMap.keys()));
+  console.log(`\nTotal unique offers in database: ${existingOffersMap.size}`);
 
   // Compare each discovered offer
   discoveredOffers.forEach((discovered) => {
@@ -75,11 +97,12 @@ export function compareOffers(
     console.log(`\nDiscovered: "${discovered.casino_name}" (${discovered.state}) -> key: "${key}"`);
     console.log(`  Match found: ${existing ? 'YES' : 'NO'}`);
     if (existing) {
-      console.log(`  Existing offer: ${formatOfferSummary(existing)}`);
+      console.log(`  Existing offer: ${formatOfferSummary(existing)} [${existing.source || 'Unknown'}]`);
     }
 
     if (!existing) {
-      // This is a new offer for a casino
+      // This is a new offer for a casino (not in Xano DB or historical research)
+      const totalSources = existingOffersMap.size;
       comparisons.push({
         casino: discovered.casino_name,
         state: discovered.state,
@@ -87,13 +110,18 @@ export function compareOffers(
         discovered_offer: formatOfferSummary(discovered),
         is_better: false,
         is_new: true,
-        difference_notes: 'New casino offer not in existing database',
+        difference_notes: `New casino offer not found in ${totalSources} existing offers (Xano database + research history)`,
         confidence_score: 85,
       });
     } else {
       // Compare the offers
       const comparison = analyzeOfferDifference(existing, discovered);
       if (comparison.is_better || comparison.is_different) {
+        // Add source information to notes
+        const sourceInfo = existing.source 
+          ? ` (compared to ${existing.source})` 
+          : ' (compared to existing data)';
+        
         comparisons.push({
           casino: discovered.casino_name,
           state: discovered.state,
@@ -101,7 +129,7 @@ export function compareOffers(
           discovered_offer: formatOfferSummary(discovered),
           is_better: comparison.is_better,
           is_new: false,
-          difference_notes: comparison.notes,
+          difference_notes: comparison.notes + sourceInfo,
           confidence_score: comparison.confidence,
         });
       }
@@ -109,6 +137,8 @@ export function compareOffers(
   });
 
   console.log(`\nTotal comparisons generated: ${comparisons.length}`);
+  console.log(`  - New offers: ${comparisons.filter(c => c.is_new).length}`);
+  console.log(`  - Better offers: ${comparisons.filter(c => c.is_better).length}`);
   console.log(`=== END COMPARISON DEBUG ===\n`);
 
   return comparisons;
