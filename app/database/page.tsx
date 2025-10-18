@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,8 +29,7 @@ import {
 import { PromotionalOffer, Casino, STATE_NAMES, USState } from '@/types'
 import { Input } from '@/components/ui/input'
 
-
-const DatabasePage = () => {
+const DatabaseContent = () => {
   const searchParams = useSearchParams()
   const [offers, setOffers] = useState<PromotionalOffer[]>([])
   const [casinos, setCasinos] = useState<Casino[]>([])
@@ -448,6 +447,23 @@ const DatabasePage = () => {
         </div>
       )}
     </div>
+  )
+}
+
+const DatabasePage = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <CardContent className="p-8 flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 text-purple-400 animate-spin" />
+            <p className="text-white text-lg">Loading database...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <DatabaseContent />
+    </Suspense>
   )
 }
 
