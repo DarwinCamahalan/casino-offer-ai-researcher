@@ -29,7 +29,7 @@
         <img width="567" height="307" alt="Results Section Navigation" src="https://github.com/user-attachments/assets/6a2c79a2-0776-4f16-a450-dcad91baa931" />
       </td>
       <td width="33%">
-        <img width="567" height="307" alt="Export Options" src="https://github.com/user-attachments/assets/27ca7d32-cc6c-46a3-a378-471d89cf907c" />
+        <img width="567" height="307" alt="Export Options" src="https://github.com/user-attachments/assets/53c64b3b-6af8-41f1-b187-e6b5150399fe" />
       </td>
       <td width="33%">
         <img width="1140" height="735" alt="Results Display" src="https://github.com/user-attachments/assets/5537c9ef-40b2-45f9-b6a3-d508cfeb0ac8" />
@@ -37,6 +37,7 @@
     </tr>
   </table>
 </div>
+
 
 ---
 
