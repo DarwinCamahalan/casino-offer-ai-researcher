@@ -1125,16 +1125,3 @@ npm run start
 
 This project was created as part of a developer trial project. All rights reserved.
 
----
-
-## 🙏 Acknowledgments
-
-- **OpenAI** for GPT-4o API
-- **Xano** for the existing offers database
-- **Vercel** for hosting and deployment
-- **Next.js Team** for the amazing framework
-- **shadcn/ui** for beautiful component primitives
-
----
-
-**Built with ❤️ using Next.js, TypeScript, and GPT-4o**
