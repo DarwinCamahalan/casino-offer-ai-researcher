@@ -8,14 +8,35 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
 
 ---
-## Screenshots
-<img width="3420" height="4440" alt="5" src="https://github.com/user-attachments/assets/04302703-695e-41c3-94d9-e21ffb6ac5cd" />
-<img width="3420" height="2898" alt="1" src="https://github.com/user-attachments/assets/be946bd9-d3ff-48ac-b77d-0e8ae3a82650" />
-<img width="3420" height="2504" alt="2" src="https://github.com/user-attachments/assets/e508d66c-eea7-4963-a172-49d939393d82" />
-<img width="1700" height="921" alt="3" src="https://github.com/user-attachments/assets/6a2c79a2-0776-4f16-a450-dcad91baa931" />
-<img width="1700" height="921" alt="3" src="https://github.com/user-attachments/assets/27ca7d32-cc6c-46a3-a378-471d89cf907c" />
-<img width="3420" height="2204" alt="6" src="https://github.com/user-attachments/assets/5537c9ef-40b2-45f9-b6a3-d508cfeb0ac8" />
 
+## Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="33%">
+        <img width="1140" height="1480" alt="Dashboard Analytics" src="https://github.com/user-attachments/assets/04302703-695e-41c3-94d9-e21ffb6ac5cd" />
+      </td>
+      <td width="33%">
+        <img width="1140" height="966" alt="Research Configuration" src="https://github.com/user-attachments/assets/be946bd9-d3ff-48ac-b77d-0e8ae3a82650" />
+      </td>
+      <td width="33%">
+        <img width="1140" height="835" alt="Research Progress" src="https://github.com/user-attachments/assets/e508d66c-eea7-4963-a172-49d939393d82" />
+      </td>
+    </tr>
+    <tr>
+      <td width="33%">
+        <img width="567" height="307" alt="Results Section Navigation" src="https://github.com/user-attachments/assets/6a2c79a2-0776-4f16-a450-dcad91baa931" />
+      </td>
+      <td width="33%">
+        <img width="567" height="307" alt="Export Options" src="https://github.com/user-attachments/assets/27ca7d32-cc6c-46a3-a378-471d89cf907c" />
+      </td>
+      <td width="33%">
+        <img width="1140" height="735" alt="Results Display" src="https://github.com/user-attachments/assets/5537c9ef-40b2-45f9-b6a3-d508cfeb0ac8" />
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
