@@ -45,6 +45,55 @@ export function groupCasinosByState(casinos: Casino[]): Record<USState, Casino[]
 }
 
 /**
+ * Create a unique key for a comparison based on casino name and offer details
+ */
+function createComparisonKey(comparison: OfferComparison): string {
+  const normalizedCasino = comparison.casino.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const offerDetails = comparison.discovered_offer_details;
+  
+  // Create a key based on casino name and all offer details
+  if (!offerDetails) {
+    return `${normalizedCasino}:no-details`;
+  }
+  
+  const detailsKey = [
+    offerDetails.bonus_amount,
+    offerDetails.match_percentage,
+    offerDetails.wagering_requirements,
+    offerDetails.promo_code
+  ].filter(Boolean).join('|');
+  
+  return `${normalizedCasino}:${detailsKey}`;
+}
+
+/**
+ * Remove duplicate comparisons that have the same casino and offer details
+ * Keep only one instance per unique offer, preferring comparisons with higher confidence
+ */
+function deduplicateComparisons(comparisons: OfferComparison[]): OfferComparison[] {
+  const comparisonMap = new Map<string, OfferComparison>();
+  
+  comparisons.forEach((comparison) => {
+    const key = createComparisonKey(comparison);
+    const existing = comparisonMap.get(key);
+    
+
+    if (!existing) {
+      comparisonMap.set(key, comparison);
+    } else {
+      const currentConfidence = comparison.confidence_score ?? 0;
+      const existingConfidence = existing.confidence_score ?? 0;
+      
+      if (currentConfidence > existingConfidence) {
+        comparisonMap.set(key, comparison);
+      }
+    }
+  });
+  
+  return Array.from(comparisonMap.values());
+}
+
+/**
  * Compare discovered offers with existing offers from both Xano database and historical research
  */
 export function compareOffers(
@@ -112,16 +161,18 @@ export function compareOffers(
         is_new: true,
         difference_notes: `New casino offer not found in ${totalSources} existing offers (Xano database + research history)`,
         confidence_score: 85,
+        discovered_casino_website: discovered.source,
+        discovered_offer_details: {
+          bonus_amount: discovered.bonus_amount,
+          match_percentage: discovered.match_percentage,
+          wagering_requirements: discovered.wagering_requirements,
+          promo_code: discovered.promo_code,
+        },
       });
     } else {
       // Compare the offers
       const comparison = analyzeOfferDifference(existing, discovered);
       if (comparison.is_better || comparison.is_different) {
-        // Add source information to notes
-        const sourceInfo = existing.source 
-          ? ` (compared to ${existing.source})` 
-          : ' (compared to existing data)';
-        
         comparisons.push({
           casino: discovered.casino_name,
           state: discovered.state,
@@ -129,8 +180,15 @@ export function compareOffers(
           discovered_offer: formatOfferSummary(discovered),
           is_better: comparison.is_better,
           is_new: false,
-          difference_notes: comparison.notes + sourceInfo,
+          difference_notes: comparison.notes,
           confidence_score: comparison.confidence,
+          discovered_casino_website: discovered.source,
+          discovered_offer_details: {
+            bonus_amount: discovered.bonus_amount,
+            match_percentage: discovered.match_percentage,
+            wagering_requirements: discovered.wagering_requirements,
+            promo_code: discovered.promo_code,
+          },
         });
       }
     }
@@ -139,9 +197,13 @@ export function compareOffers(
   console.log(`\nTotal comparisons generated: ${comparisons.length}`);
   console.log(`  - New offers: ${comparisons.filter(c => c.is_new).length}`);
   console.log(`  - Better offers: ${comparisons.filter(c => c.is_better).length}`);
+
+  // Deduplicate comparisons - remove duplicate comparisons that have the same offer details
+  const uniqueComparisons = deduplicateComparisons(comparisons);
+  console.log(`\nAfter deduplication: ${uniqueComparisons.length} unique comparisons`);
   console.log(`=== END COMPARISON DEBUG ===\n`);
 
-  return comparisons;
+  return uniqueComparisons;
 }
 
 /**
@@ -159,27 +221,35 @@ function analyzeOfferDifference(
   const differences: string[] = [];
   let isBetter = false;
   let isDifferent = false;
-  let confidence = 90;
+  let confidence = 95; // Start with high confidence
+  let fieldsCompared = 0;
+  let fieldsMatched = 0;
 
   // Compare bonus amounts
   const existingAmount = extractNumericValue(existing.bonus_amount);
   const discoveredAmount = extractNumericValue(discovered.bonus_amount);
 
   if (discoveredAmount && existingAmount) {
+    fieldsCompared++;
     if (discoveredAmount > existingAmount) {
       differences.push(
-        `Higher bonus amount: $${discoveredAmount} vs $${existingAmount}`
+        `+$${discoveredAmount - existingAmount} bonus`
       );
       isBetter = true;
     } else if (discoveredAmount < existingAmount) {
       differences.push(
-        `Lower bonus amount: $${discoveredAmount} vs $${existingAmount}`
+        `-$${existingAmount - discoveredAmount} bonus`
       );
       isDifferent = true;
+    } else {
+      fieldsMatched++;
     }
   } else if (discoveredAmount && !existingAmount) {
-    differences.push(`New bonus amount specified: $${discoveredAmount}`);
+    differences.push(`$${discoveredAmount} bonus added`);
     isDifferent = true;
+    confidence -= 5; // Slight reduction for missing data
+  } else if (!discoveredAmount && existingAmount) {
+    confidence -= 5; // Slight reduction for missing data
   }
 
   // Compare match percentages
@@ -187,17 +257,24 @@ function analyzeOfferDifference(
   const discoveredMatch = extractNumericValue(discovered.match_percentage);
 
   if (discoveredMatch && existingMatch) {
+    fieldsCompared++;
     if (discoveredMatch > existingMatch) {
       differences.push(
-        `Higher match percentage: ${discoveredMatch}% vs ${existingMatch}%`
+        `+${discoveredMatch - existingMatch}% match`
       );
       isBetter = true;
     } else if (discoveredMatch < existingMatch) {
       differences.push(
-        `Lower match percentage: ${discoveredMatch}% vs ${existingMatch}%`
+        `-${existingMatch - discoveredMatch}% match`
       );
       isDifferent = true;
+    } else {
+      fieldsMatched++;
     }
+  } else if (!discoveredMatch && existingMatch) {
+    confidence -= 5;
+  } else if (discoveredMatch && !existingMatch) {
+    confidence -= 5;
   }
 
   // Compare wagering requirements (lower is better)
@@ -205,16 +282,35 @@ function analyzeOfferDifference(
   const discoveredWager = extractNumericValue(discovered.wagering_requirements);
 
   if (discoveredWager && existingWager) {
+    fieldsCompared++;
     if (discoveredWager < existingWager) {
       differences.push(
-        `Better wagering requirements: ${discoveredWager}x vs ${existingWager}x`
+        `${existingWager - discoveredWager}x lower wagering`
       );
       isBetter = true;
     } else if (discoveredWager > existingWager) {
       differences.push(
-        `Worse wagering requirements: ${discoveredWager}x vs ${existingWager}x`
+        `${discoveredWager - existingWager}x higher wagering`
       );
       isDifferent = true;
+    } else {
+      fieldsMatched++;
+    }
+  } else if (!discoveredWager && existingWager) {
+    confidence -= 5;
+  } else if (discoveredWager && !existingWager) {
+    confidence -= 5;
+  }
+
+  // Compare promo codes
+  if (existing.promo_code && discovered.promo_code) {
+    fieldsCompared++;
+    if (existing.promo_code !== discovered.promo_code) {
+      differences.push(`New code: ${discovered.promo_code}`);
+      isDifferent = true;
+      confidence -= 3;
+    } else {
+      fieldsMatched++;
     }
   }
 
@@ -223,15 +319,42 @@ function analyzeOfferDifference(
     existing.offer_title !== discovered.offer_title &&
     discovered.offer_title !== 'Untitled Offer'
   ) {
-    differences.push('Offer details have changed');
+    differences.push('Offer updated');
     isDifferent = true;
-    confidence = 75; // Lower confidence when details differ
+    confidence -= 10; // Reduce confidence when titles differ
   }
 
-  const notes =
-    differences.length > 0
-      ? differences.join('; ')
-      : 'Offer appears similar to existing';
+  // Adjust confidence based on field comparison ratio
+  if (fieldsCompared > 0) {
+    const matchRatio = fieldsMatched / fieldsCompared;
+    if (matchRatio === 1 && differences.length === 0) {
+      // Perfect match on all comparable fields
+      confidence = 98;
+    } else if (matchRatio >= 0.5) {
+      // Good amount of matching data
+      confidence = Math.max(confidence, 85);
+    } else if (fieldsCompared < 2) {
+      // Not enough data to compare
+      confidence = Math.max(confidence - 15, 70);
+    }
+  } else {
+    // No numeric fields to compare, rely on text comparison only
+    confidence = 75;
+  }
+
+  // Ensure confidence stays in valid range
+  confidence = Math.max(60, Math.min(98, confidence));
+
+  // Create concise summary - show max 2 most important differences
+  let notes = 'Similar offer';
+  if (differences.length > 0) {
+    // Prioritize: bonus > match > wagering > promo code > offer changes
+    const topDifferences = differences.slice(0, 2);
+    notes = topDifferences.join(' • ');
+    if (differences.length > 2) {
+      notes += ` +${differences.length - 2} more`;
+    }
+  }
 
   return {
     is_better: isBetter,
@@ -285,9 +408,36 @@ function extractNumericValue(value?: string): number | null {
 
 /**
  * Normalize casino name for comparison
+ * Handles variations like "BetMGM" vs "BetMGM Online Casino"
  */
 function normalizeCasinoName(name: string, state: USState): string {
-  return `${name.toLowerCase().trim().replace(/[^a-z0-9]/g, '')}-${state}`;
+  let normalized = name.toLowerCase().trim();
+  
+  // Remove common suffixes and words
+  const removeWords = [
+    'online casino',
+    'casino',
+    'online',
+    'sportsbook',
+    'gaming',
+    'hotel',
+    'resort',
+    'bet',
+    'the',
+    'and',
+    '&',
+  ];
+  
+  // Remove these words from the name
+  removeWords.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    normalized = normalized.replace(regex, '');
+  });
+  
+  // Remove all non-alphanumeric characters and extra spaces
+  normalized = normalized.replace(/[^a-z0-9]/g, '').trim();
+  
+  return `${normalized}-${state}`;
 }
 
 /**

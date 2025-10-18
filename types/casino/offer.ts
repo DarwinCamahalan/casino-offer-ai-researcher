@@ -30,4 +30,11 @@ export interface OfferComparison {
   is_new: boolean
   difference_notes: string
   confidence_score?: number
+  discovered_casino_website?: string
+  discovered_offer_details?: {
+    bonus_amount?: string
+    match_percentage?: string
+    wagering_requirements?: string
+    promo_code?: string
+  }
 }

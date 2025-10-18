@@ -20,10 +20,12 @@ import {
   ExternalLink,
   Sparkles,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Search
 } from 'lucide-react'
 import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   results: ResearchResult
@@ -78,10 +80,16 @@ const PillCarousel = ({ children }: { children: React.ReactNode }) => {
 }
 
 const ResearchResults = ({ results }: Props) => {
+  const router = useRouter()
   const totalMissingCasinos = Object.values(results.missing_casinos).reduce(
     (sum, casinos) => sum + casinos.length,
     0
   )
+
+  const handleDatabaseRedirect = (casinoName: string) => {
+    // Redirect to database page with casino filter
+    router.push(`/database?casino=${encodeURIComponent(casinoName)}`)
+  }
 
   return (
     <div className="space-y-6">
@@ -184,63 +192,94 @@ const ResearchResults = ({ results }: Props) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {Object.entries(results.missing_casinos).map(([state, casinos]) => {
                   if (casinos.length === 0) return null
                   return (
                     <div key={state}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge className="bg-purple-600">{STATE_NAMES[state as keyof typeof STATE_NAMES]}</Badge>
-                        <span className="text-muted-foreground text-sm">
-                          {casinos.length} casino{casinos.length !== 1 ? 's' : ''}
+                      {/* State Header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <Badge variant="outline" className="border-purple-500/50 text-purple-400 text-sm px-3 py-1">
+                          {STATE_NAMES[state as keyof typeof STATE_NAMES]}
+                        </Badge>
+                        <div className="h-px flex-1 bg-gradient-to-r from-purple-500/30 to-transparent" />
+                        <span className="text-muted-foreground text-sm font-medium">
+                          {casinos.length} {casinos.length !== 1 ? 'Casinos' : 'Casino'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                      {/* Casino Cards Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {casinos.map((casino, idx) => (
                           <motion.div
                             key={idx}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            whileHover={{ x: 4 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.03 }}
                           >
-                            <Card className="bg-card/50 border-border">
+                            <Card className="bg-card border-border hover:border-purple-500/50 transition-all group">
                               <CardContent className="p-4">
-                                <div className="space-y-2">
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1">
-                                      <h4 className="text-foreground font-semibold">{casino.name}</h4>
+                                <div className="flex items-start gap-3">
+                                  {/* Icon */}
+                                  <div className="p-2 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg group-hover:from-purple-600/30 group-hover:to-pink-600/30 transition-all">
+                                    <Building2 className="h-5 w-5 text-purple-400" />
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-foreground font-semibold mb-1 group-hover:text-purple-400 transition-colors">
+                                      {casino.name}
+                                    </h4>
+                                    
+                                    {/* Casino Details */}
+                                    <div className="space-y-1">
                                       {casino.brand && (
-                                        <p className="text-muted-foreground text-sm mt-1">
-                                          Brand: {casino.brand}
-                                        </p>
+                                        <div className="flex items-center gap-2 text-xs">
+                                          <span className="text-muted-foreground">Brand:</span>
+                                          <span className="text-foreground font-medium">{casino.brand}</span>
+                                        </div>
                                       )}
                                       {casino.license_number && !casino.license_number.match(/^LIC-\d{4}$/) && (
-                                        <p className="text-muted-foreground text-xs mt-1">
-                                          License: {casino.license_number}
-                                        </p>
+                                        <div className="flex items-center gap-2 text-xs">
+                                          <span className="text-muted-foreground">License:</span>
+                                          <span className="text-foreground font-mono">{casino.license_number}</span>
+                                        </div>
+                                      )}
+                                      {casino.is_operational !== undefined && (
+                                        <Badge 
+                                          variant={casino.is_operational ? "default" : "secondary"}
+                                          className={`text-xs mt-2 ${casino.is_operational ? 'bg-green-600' : 'bg-gray-600'}`}
+                                        >
+                                          {casino.is_operational ? 'Operational' : 'Not Operational'}
+                                        </Badge>
                                       )}
                                     </div>
+
+                                    {/* Website Link */}
+                                    {casino.website && (
+                                      <a
+                                        href={casino.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-xs mt-3 pt-3 border-t border-border group/link"
+                                      >
+                                        <span className="truncate font-medium">
+                                          {casino.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                                        </span>
+                                        <ExternalLink className="h-3 w-3 flex-shrink-0 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+                                      </a>
+                                    )}
                                   </div>
-                                  {casino.website && (
-                                    <a
-                                      href={casino.website}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm mt-2 group"
-                                    >
-                                      <span className="truncate">{casino.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
-                                      <ExternalLink className="h-3 w-3 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                                    </a>
-                                  )}
                                 </div>
                               </CardContent>
                             </Card>
                           </motion.div>
                         ))}
                       </div>
+
+                      {/* Separator between states */}
                       {state !== Object.keys(results.missing_casinos).filter(s => results.missing_casinos[s as keyof typeof results.missing_casinos].length > 0).pop() && (
-                        <Separator className="bg-border mt-4" />
+                        <Separator className="bg-border mt-6" />
                       )}
                     </div>
                   )
@@ -361,71 +400,187 @@ const ResearchResults = ({ results }: Props) => {
                 Offer Comparisons
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Better offers found compared to your existing database and all previous research
+                Side-by-side comparison of current vs. discovered offers
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {results.offer_comparisons.map((comparison, idx) => (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                   >
-                    <Card className="bg-card/50 border-border">
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="text-foreground font-semibold">{comparison.casino}</h4>
-                              <p className="text-muted-foreground text-sm">{STATE_NAMES[comparison.state as keyof typeof STATE_NAMES]}</p>
-                            </div>
-                            {comparison.is_better && (
-                              <Badge className="bg-green-600 flex items-center gap-1">
-                                <TrendingUp className="h-3 w-3" />
-                                Better Offer
-                              </Badge>
-                            )}
-                            {comparison.is_new && (
-                              <Badge className="bg-purple-600 flex items-center gap-1">
-                                <Sparkles className="h-3 w-3" />
-                                New
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-muted/50 rounded p-3">
-                              <p className="text-muted-foreground text-xs mb-2">Your Offer</p>
-                              <p className="text-foreground font-semibold">
-                                {comparison.current_offer || 'No existing offer'}
-                              </p>
-                            </div>
-
-                            <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded p-3 border border-purple-500/30">
-                              <p className="text-purple-400 text-xs mb-2">Discovered Offer</p>
-                              <p className="text-foreground font-semibold">{comparison.discovered_offer}</p>
-                            </div>
-                          </div>
-
-                          {comparison.difference_notes && (
-                            <div className="bg-blue-600/10 border border-blue-500/30 rounded p-3">
-                              <p className="text-blue-400 text-sm">
-                                <Zap className="h-4 w-4 inline mr-1" />
-                                {comparison.difference_notes}
-                              </p>
-                            </div>
-                          )}
-
-                          {comparison.confidence_score !== undefined && comparison.confidence_score >= 0 && comparison.confidence_score <= 1 && (
-                            <div className="text-xs text-muted-foreground">
-                              Confidence: {Math.round(comparison.confidence_score * 100)}%
-                            </div>
-                          )}
+                    {/* Casino Header with Analysis */}
+                    <div className="mb-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-foreground font-semibold text-lg">{comparison.casino}</h4>
+                        <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+                          {STATE_NAMES[comparison.state as keyof typeof STATE_NAMES]}
+                        </Badge>
+                      </div>
+                      {comparison.difference_notes && (
+                        <div className="flex items-center gap-2 bg-green-600/10 border border-green-500/30 rounded-lg px-3 py-2">
+                          <Zap className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <p className="text-green-400 dark:text-green-300 text-sm">
+                            {comparison.difference_notes}
+                          </p>
                         </div>
-                      </CardContent>
-                    </Card>
+                      )}
+                    </div>
+
+                    {/* Side-by-Side Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Your Offer Card */}
+                      <Card className="bg-card border-border hover:border-primary/50 transition-all">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <div className="p-2 bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-lg">
+                                <Gift className="h-5 w-5 text-orange-500" />
+                              </div>
+                              <CardTitle className="text-base">Your Offer</CardTitle>
+                            </div>
+                            <button
+                              onClick={() => handleDatabaseRedirect(comparison.casino)}
+                              className="text-orange-400 hover:text-orange-300 transition-colors"
+                              title="View in database"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          {comparison.current_offer ? (
+                            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                              <div className="space-y-3">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-foreground mb-2">
+                                      {comparison.current_offer.split('|')[0].trim()}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {comparison.current_offer}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Extract bonus amount from current_offer if available */}
+                                {comparison.current_offer.includes('$') && (
+                                  <div className="grid grid-cols-1 gap-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <span className="text-muted-foreground">Bonus:</span>
+                                      <span className="font-semibold text-foreground">
+                                        {comparison.current_offer.match(/\$[\d,]+/)?.[0] || 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="pt-2 border-t border-border">
+                                  <span className="text-xs text-muted-foreground">
+                                    Source: Xano API
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+                              <p className="text-muted-foreground text-sm">No existing offer</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Discovered Offer Card */}
+                      <Card className="bg-card border-border hover:border-primary/50 transition-all">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="p-2 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg">
+                                <Search className="h-5 w-5 text-purple-400" />
+                              </div>
+                              <CardTitle className="text-base">Discovered Offer</CardTitle>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {comparison.is_better && (
+                                <Badge className="bg-green-600 flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3" />
+                                  Better
+                                </Badge>
+                              )}
+                              {comparison.is_new && (
+                                <Badge className="bg-purple-600 flex items-center gap-1">
+                                  <Sparkles className="h-3 w-3" />
+                                  New
+                                </Badge>
+                              )}
+                              <button
+                                onClick={() => handleDatabaseRedirect(comparison.casino)}
+                                className="text-purple-400 hover:text-purple-300 transition-colors"
+                                title="View in database"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                            <div className="space-y-3">
+                              <p className="text-foreground text-sm font-medium mb-2">
+                                {comparison.discovered_offer}
+                              </p>
+
+                              <PillCarousel>
+                                {comparison.discovered_offer_details?.bonus_amount && (
+                                  <Badge className="bg-green-600 flex-shrink-0">
+                                    {comparison.discovered_offer_details.bonus_amount}
+                                  </Badge>
+                                )}
+                                {comparison.discovered_offer_details?.match_percentage && (
+                                  <Badge className="bg-blue-600 flex-shrink-0">
+                                    {comparison.discovered_offer_details.match_percentage}
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="border-border text-foreground flex-shrink-0">
+                                  {STATE_NAMES[comparison.state as keyof typeof STATE_NAMES]}
+                                </Badge>
+                              </PillCarousel>
+
+                              {comparison.discovered_offer_details?.promo_code && (
+                                <div className="bg-muted/50 rounded px-3 py-2">
+                                  <p className="text-xs text-muted-foreground">Promo Code</p>
+                                  <p className="text-yellow-500 font-mono font-bold">
+                                    {comparison.discovered_offer_details.promo_code}
+                                  </p>
+                                </div>
+                              )}
+
+                              {comparison.discovered_casino_website && (
+                                <div className="pt-2 border-t border-border">
+                                  <a
+                                    href={comparison.discovered_casino_website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-xs group"
+                                  >
+                                    <span className="truncate">{comparison.discovered_casino_website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                                    <ExternalLink className="h-3 w-3 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {idx < results.offer_comparisons.length - 1 && (
+                      <Separator className="mt-6" />
+                    )}
                   </motion.div>
                 ))}
               </div>
@@ -441,10 +596,10 @@ const ResearchResults = ({ results }: Props) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <Card className="bg-yellow-900/20 border-yellow-500/30">
+          <Card className="bg-red-900/20 border-red-500/30">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-yellow-400" />
+                <AlertCircle className="h-5 w-5 text-red-400" />
                 Research Limitations
               </CardTitle>
             </CardHeader>
@@ -452,7 +607,7 @@ const ResearchResults = ({ results }: Props) => {
               <ul className="space-y-2">
                 {results.limitations.map((limitation, idx) => (
                   <li key={idx} className="text-muted-foreground text-sm flex items-start gap-2">
-                    <span className="text-yellow-400 mt-1">•</span>
+                    <span className="text-red-400 mt-1">•</span>
                     <span>{limitation}</span>
                   </li>
                 ))}

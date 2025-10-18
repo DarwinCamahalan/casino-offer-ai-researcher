@@ -5,6 +5,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,7 @@ import { Input } from '@/components/ui/input'
 
 
 const DatabasePage = () => {
+  const searchParams = useSearchParams()
   const [offers, setOffers] = useState<PromotionalOffer[]>([])
   const [casinos, setCasinos] = useState<Casino[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,6 +74,14 @@ const DatabasePage = () => {
   useEffect(() => {
     fetchData()
   }, [])
+
+  // Handle URL parameters for filtering
+  useEffect(() => {
+    const casinoParam = searchParams.get('casino')
+    if (casinoParam) {
+      setSelectedCasino(casinoParam)
+    }
+  }, [searchParams])
 
   // Get unique states and casinos for filters
   const uniqueStates = Array.from(new Set(offers.map(o => o.state))).sort()
@@ -404,7 +414,6 @@ const DatabasePage = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                   {offer.bonus_amount && (
                                     <div className="flex items-center gap-2 text-sm">
-                                      <DollarSign className="h-4 w-4 text-green-500" />
                                       <span className="text-muted-foreground">Bonus:</span>
                                       <span className="font-semibold text-foreground">{offer.bonus_amount}</span>
                                     </div>

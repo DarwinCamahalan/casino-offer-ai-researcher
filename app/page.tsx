@@ -173,7 +173,6 @@ const HomePage = () => {
           >
             <Card className="bg-gradient-to-br from-orange-600 to-red-800 border-0 shadow-lg h-full">
               <CardHeader className="p-4 md:p-6">
-                <History className="h-6 w-6 md:h-8 md:w-8 text-white mb-2" />
                 <CardTitle className="text-white text-base md:text-lg">History</CardTitle>
                 <CardDescription className="text-orange-100 text-sm">
                   View past research sessions
