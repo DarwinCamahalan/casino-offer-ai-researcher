@@ -25,7 +25,7 @@ const ResearchLoading = ({
   const [currentStep, setCurrentStep] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
 
-  // Define all possible steps
+  // Define all possible steps with more realistic durations
   const allSteps = [
     { 
       id: 'fetching',
@@ -38,21 +38,21 @@ const ResearchLoading = ({
       id: 'discovering',
       label: 'Discovering casinos', 
       icon: <Sparkles className="h-5 w-5" />, 
-      duration: 35,
+      duration: 40, // Increased from 35
       showWhen: includeCasinoDiscovery
     },
     { 
       id: 'researching',
       label: 'Researching offers', 
       icon: <TrendingUp className="h-5 w-5" />, 
-      duration: 50,
+      duration: 70, // Increased from 50 to match real API time
       showWhen: includeOfferResearch
     },
     { 
       id: 'comparing',
       label: 'Comparing results', 
       icon: <CheckCircle2 className="h-5 w-5" />, 
-      duration: 15,
+      duration: 30, // Increased from 15
       showWhen: includeCasinoDiscovery || includeOfferResearch
     },
   ]
@@ -74,14 +74,20 @@ const ResearchLoading = ({
       elapsed += 1
       setElapsedTime(elapsed)
       
-      // Calculate progress with a more accurate curve
-      // Allow progress to reach 98% instead of stopping at 95%
+      // Calculate progress with better handling of overruns
       let calculatedProgress = (elapsed / totalDuration) * 100
       
-      // Apply easing to make it feel more natural
-      // Slow down as we approach completion
-      if (calculatedProgress > 90) {
-        calculatedProgress = 90 + (calculatedProgress - 90) * 0.5
+      // If we've exceeded the estimated time, continue slowly
+      if (elapsed > totalDuration) {
+        // Continue incrementing slowly after estimated time
+        // Each second after totalDuration only adds 0.1% progress
+        const overtime = elapsed - totalDuration
+        calculatedProgress = 95 + Math.min(overtime * 0.1, 3) // Cap at 98%
+      } else if (calculatedProgress > 85) {
+        // Apply stronger easing as we approach the end
+        // This makes the last 15% take longer, matching real-world slowdown
+        const excessProgress = calculatedProgress - 85
+        calculatedProgress = 85 + (excessProgress * 0.6)
       }
       
       const newProgress = Math.min(calculatedProgress, 98)
@@ -97,14 +103,13 @@ const ResearchLoading = ({
         }
       }
       
-      // Ensure we're on the last step near completion
-      if (elapsed >= totalDuration * 0.95) {
+      // Stay on the last step if we've exceeded total duration
+      if (elapsed >= totalDuration * 0.9) {
         setCurrentStep(steps.length - 1)
       }
 
-      if (elapsed >= totalDuration) {
-        clearInterval(interval)
-      }
+      // Don't clear interval - let it continue until component unmounts
+      // This allows progress to continue slowly if API takes longer than expected
     }, 1000)
 
     return () => clearInterval(interval)
@@ -231,7 +236,11 @@ const ResearchLoading = ({
             <p className="text-muted-foreground text-xs mt-2">
               {progress < 98 ? (
                 <>
-                  Estimated time remaining: {Math.max(1, totalDuration - elapsedTime)}s
+                  {elapsedTime < totalDuration ? (
+                    <>Estimated time remaining: {Math.max(1, totalDuration - elapsedTime)}s</>
+                  ) : (
+                    <>Processing large dataset, almost complete...</>
+                  )}
                 </>
               ) : (
                 <>Finalizing results...</>
