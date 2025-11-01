@@ -52,8 +52,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Filter offers to only include requested states
+    const filteredOfferComparisons = selectedResult.offer_comparisons.filter(
+      (comp: any) => states.includes(comp.state as USState)
+    )
+    
+    const filteredNewOffers = selectedResult.new_offers.filter(
+      (offer: any) => states.includes(offer.state as USState)
+    )
+
     // Transform offer comparisons to match expected format
-    const transformedComparisons = selectedResult.offer_comparisons.map((comp: any) => {
+    const transformedComparisons = filteredOfferComparisons.map((comp: any) => {
       const currentOfferStr = comp.current_offer 
         ? `${comp.current_offer.offer_type} | ${comp.current_offer.bonus_amount} bonus | ${comp.current_offer.match_percentage} match | ${comp.current_offer.wagering_requirement} wagering`
         : null
@@ -85,13 +94,16 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(), // Always use current timestamp
       missing_casinos: filteredMissingCasinos,
       offer_comparisons: transformedComparisons,
-      new_offers: selectedResult.new_offers as any,
+      new_offers: filteredNewOffers as any,
       limitations: selectedResult.limitations,
       execution_time_ms: executionTime,
       api_calls_made: selectedResult.api_calls_made,
     }
 
-    console.log(`Research completed in ${executionTime}ms using mock data`)
+    console.log(`Research completed in ${executionTime}ms using mock data - Selected variant ${mockData.results.indexOf(selectedResult) + 1}/${mockData.results.length}`)
+    console.log(`  - Missing casinos: ${Object.values(filteredMissingCasinos).flat().length}`)
+    console.log(`  - Offer comparisons: ${transformedComparisons.length}`)
+    console.log(`  - New offers: ${filteredNewOffers.length}`)
 
     return NextResponse.json({
       success: true,
