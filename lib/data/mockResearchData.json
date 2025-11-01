@@ -1,0 +1,62 @@
+{
+  "results": [
+    {
+      "timestamp": "2025-11-01T14:30:00.000Z",
+      "states": ["NJ"],
+      "missing_casinos": {
+        "NJ": [
+          {
+            "name": "Ocean Casino Resort",
+            "website": "https://www.theoceanac.com",
+            "license_number": "CIE-2018-01",
+            "operational_status": "Active",
+            "last_verified": "2025-11-01"
+          }
+        ]
+      },
+      "offer_comparisons": [
+        {
+          "casino_name": "BetMGM Casino",
+          "state": "NJ",
+          "casino_website": "https://casino.betmgm.com/nj",
+          "current_offer": {
+            "offer_type": "Welcome Bonus",
+            "bonus_amount": "$1,000",
+            "match_percentage": "100%",
+            "wagering_requirement": "15x",
+            "promo_code": "BETMGM1000"
+          },
+          "discovered_offer": {
+            "offer_type": "Welcome Bonus",
+            "bonus_amount": "$1,500",
+            "match_percentage": "100%",
+            "wagering_requirement": "10x",
+            "promo_code": "BETMGM1500"
+          },
+          "is_better": true,
+          "reason": "Higher bonus amount",
+          "confidence_score": 0.95
+        }
+      ],
+      "new_offers": [
+        {
+          "casino": "Ocean Casino Resort",
+          "state": "NJ",
+          "website": "https://www.theoceanac.com",
+          "offer_type": "Welcome Bonus",
+          "bonus_amount": "$500",
+          "match_percentage": "100%",
+          "wagering_requirements": "10x",
+          "promo_code": "OCEAN500",
+          "last_verified": "2025-11-01"
+        }
+      ],
+      "limitations": [
+        "Promotional offers change frequently",
+        "AI research may not capture all offers"
+      ],
+      "execution_time_ms": 45230,
+      "api_calls_made": 8
+    }
+  ]
+}

@@ -1,189 +1,97 @@
 /**
  * API Route: /api/ai/research
  * Main endpoint for AI-powered casino and offer research
+ * Uses mock data to simulate the research process
  * Next.js 14 App Router format
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  ResearchResult,
   ResearchRequest,
-  US_STATES,
+  ResearchResult,
   USState,
-  Casino,
-  PromotionalOffer,
+  US_STATES,
 } from '@/types'
-import {
-  fetchExistingOffers,
-  normalizeXanoOffers,
-  extractCasinosFromOffers,
-} from '@/lib/services/xanoService'
-import {
-  discoverCasinosInState,
-  batchResearchOffers,
-} from '@/lib/services/aiResearchService'
-import {
-  findMissingCasinos,
-  groupCasinosByState,
-  compareOffers,
-  findNewOffers,
-} from '@/lib/services/comparisonService'
+import mockData from '@/lib/data/mockResearchData.json'
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  const limitations: string[] = []
-  let apiCallsCount = 0
 
   try {
     // Parse request body
     const requestData: ResearchRequest = await request.json()
     const {
       states = US_STATES,
-      include_offer_research = true,
-      include_casino_discovery = true,
     } = requestData
 
-    // Validate OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            error: 'Configuration Error',
-            message: 'OpenAI API key is not configured',
-          },
-        },
-        { status: 500 }
-      )
+    // Simulate processing time for realistic feel (2-3 seconds)
+    await delay(2000 + Math.random() * 1000)
+
+    // Find all matching results for the requested states
+    const matchingResults = mockData.results.filter(result => {
+      // Check if result contains any of the requested states
+      return result.states.some(state => states.includes(state as USState))
+    })
+
+    // If we have matching results, randomly select one
+    let selectedResult
+    if (matchingResults.length > 0) {
+      const randomIndex = Math.floor(Math.random() * matchingResults.length)
+      selectedResult = matchingResults[randomIndex]
+    } else {
+      // Fallback to first result if no matches
+      selectedResult = mockData.results[0]
     }
 
-    // Step 1: Fetch existing data from Xano
-    console.log('Fetching existing offers from Xano...')
-    const xanoOffers = await fetchExistingOffers()
-    apiCallsCount++
-    
-    const existingOffers = normalizeXanoOffers(xanoOffers)
-    const existingCasinos = extractCasinosFromOffers(existingOffers)
+    // Filter the result to only include requested states
+    const filteredMissingCasinos: Record<string, any[]> = {}
+    for (const state of states) {
+      const stateCasinos = (selectedResult.missing_casinos as any)[state]
+      if (stateCasinos) {
+        filteredMissingCasinos[state] = stateCasinos
+      }
+    }
 
-    console.log(`Found ${existingOffers.length} existing offers from ${existingCasinos.length} casinos`)
-
-    // Step 2: Discover casinos (if enabled)
-    // Get previously researched casino websites from request to avoid duplicates
-    const excludeCasinoWebsites = requestData.exclude_casino_websites || []
-    console.log(`Excluding ${excludeCasinoWebsites.length} previously researched casinos`)
-    
-    let discoveredCasinos: Casino[] = []
-    if (include_casino_discovery) {
-      console.log(`Discovering casinos in: ${states.join(', ')}`)
+    // Transform offer comparisons to match expected format
+    const transformedComparisons = selectedResult.offer_comparisons.map((comp: any) => {
+      const currentOfferStr = comp.current_offer 
+        ? `${comp.current_offer.offer_type} | ${comp.current_offer.bonus_amount} bonus | ${comp.current_offer.match_percentage} match | ${comp.current_offer.wagering_requirement} wagering`
+        : null
       
-      for (const state of states) {
-        try {
-          const stateCasinos = await discoverCasinosInState(state, excludeCasinoWebsites)
-          discoveredCasinos.push(...stateCasinos)
-          apiCallsCount++
-          console.log(`Found ${stateCasinos.length} NEW casinos in ${state}`)
-          
-          // Add delay to respect rate limits
-          await delay(1000)
-        } catch (error) {
-          console.error(`Error discovering casinos in ${state}:`, error)
-          limitations.push(`Could not complete casino discovery for ${state}`)
+      const discoveredOfferStr = `${comp.discovered_offer.offer_type} | ${comp.discovered_offer.bonus_amount} bonus | ${comp.discovered_offer.match_percentage} match | ${comp.discovered_offer.wagering_requirement} wagering`
+
+      return {
+        casino: comp.casino_name,
+        state: comp.state,
+        current_offer: currentOfferStr,
+        discovered_offer: discoveredOfferStr,
+        is_better: comp.is_better,
+        is_new: false,
+        difference_notes: comp.reason,
+        confidence_score: comp.confidence_score,
+        discovered_casino_website: comp.casino_website,
+        discovered_offer_details: {
+          bonus_amount: comp.discovered_offer.bonus_amount,
+          match_percentage: comp.discovered_offer.match_percentage,
+          wagering_requirements: comp.discovered_offer.wagering_requirement,
+          promo_code: comp.discovered_offer.promo_code,
         }
       }
-    } else {
-      limitations.push('Casino discovery was disabled for this research run')
-    }
+    })
 
-    // Step 3: Find missing casinos
-    const missingCasinos = include_casino_discovery
-      ? findMissingCasinos(discoveredCasinos, existingCasinos)
-      : []
-    const missingCasinosByState = groupCasinosByState(missingCasinos)
-
-    console.log(`Identified ${missingCasinos.length} missing casinos`)
-
-    // Step 4: Research promotional offers (if enabled)
-    let discoveredOffers: PromotionalOffer[] = []
-    if (include_offer_research) {
-      console.log('Researching promotional offers...')
-      
-      // If casino discovery is disabled but we need casinos to research offers for,
-      // discover them anyway (but don't include them in missing casinos)
-      let tempDiscoveredCasinos: Casino[] = []
-      if (!include_casino_discovery) {
-        console.log(`Discovering casinos for offer research (not included in results)...`)
-        for (const state of states) {
-          try {
-            const stateCasinos = await discoverCasinosInState(state, excludeCasinoWebsites)
-            tempDiscoveredCasinos.push(...stateCasinos)
-            apiCallsCount++
-            await delay(1000)
-          } catch (error) {
-            console.error(`Error discovering casinos in ${state}:`, error)
-          }
-        }
-      }
-      
-      // Research offers for existing casinos, discovered casinos, and missing casinos
-      const casinosToResearch = [
-        ...existingCasinos.filter((c) => states.includes(c.state)),
-        ...missingCasinos,
-        ...tempDiscoveredCasinos,
-      ]
-
-      try {
-        discoveredOffers = await batchResearchOffers(casinosToResearch, 3)
-        apiCallsCount += casinosToResearch.length
-        console.log(`Discovered ${discoveredOffers.length} promotional offers`)
-      } catch (error) {
-        console.error('Error researching offers:', error)
-        limitations.push('Some promotional offer research could not be completed')
-      }
-    } else {
-      limitations.push('Promotional offer research was disabled for this research run')
-    }
-
-    // Step 5: Compare offers with both Xano database and historical research data
-    const historicalOffers = requestData.historical_offers || [];
-    console.log(`Comparing with ${historicalOffers.length} historical offers from previous research`);
-    
-    const offerComparisons = include_offer_research
-      ? compareOffers(discoveredOffers, existingOffers, historicalOffers)
-      : []
-
-    // New offers should be checked against all sources (Xano + historical)
-    const allKnownOffers = [...existingOffers, ...historicalOffers];
-    const newOffers = include_offer_research
-      ? findNewOffers(discoveredOffers, allKnownOffers)
-      : []
-
-    console.log(`Generated ${offerComparisons.length} offer comparisons`)
-    console.log(`  - Better offers: ${offerComparisons.filter(c => c.is_better).length}`)
-    console.log(`  - New offers: ${newOffers.length}`)
-
-    // Step 6: Build result
     const executionTime = Date.now() - startTime
 
-    // Add general limitations
-    if (discoveredOffers.length === 0 && include_offer_research) {
-      limitations.push('No promotional offers were discovered during this research run')
-    }
-    
-    limitations.push('Promotional offers change frequently and should be verified regularly')
-    limitations.push('AI research may not capture all available offers or casinos')
-    limitations.push('Data accuracy depends on the availability of public information')
-
     const result: ResearchResult = {
-      timestamp: new Date().toISOString(),
-      missing_casinos: missingCasinosByState,
-      offer_comparisons: offerComparisons,
-      new_offers: newOffers,
-      limitations,
+      timestamp: new Date().toISOString(), // Always use current timestamp
+      missing_casinos: filteredMissingCasinos,
+      offer_comparisons: transformedComparisons,
+      new_offers: selectedResult.new_offers as any,
+      limitations: selectedResult.limitations,
       execution_time_ms: executionTime,
-      api_calls_made: apiCallsCount,
+      api_calls_made: selectedResult.api_calls_made,
     }
 
-    console.log(`Research completed in ${executionTime}ms with ${apiCallsCount} API calls`)
+    console.log(`Research completed in ${executionTime}ms using mock data`)
 
     return NextResponse.json({
       success: true,
@@ -201,7 +109,6 @@ export async function POST(request: NextRequest) {
           message: error instanceof Error ? error.message : 'An unexpected error occurred during research',
           details: {
             execution_time_ms: executionTime,
-            api_calls_made: apiCallsCount,
           },
         },
       },
