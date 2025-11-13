@@ -4,7 +4,8 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -18,6 +19,7 @@ import { TrendingUp, DollarSign, Database, Zap } from 'lucide-react'
 import { fetchExistingOffers, normalizeXanoOffers, extractCasinosFromOffers } from '@/lib/services/xanoService'
 import { ResearchResult, PromotionalOffer, Casino, USState } from '@/types'
 import { useTheme } from 'next-themes'
+import { initializeMockDataIfNeeded } from '@/lib/utils/mockDataInitializer'
 
 // Dynamically import ReactECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), {
@@ -96,20 +98,24 @@ const DashboardStats = () => {
   const [loading, setLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const { theme, systemTheme } = useTheme()
+  const pathname = usePathname()
   
   const currentTheme = theme === 'system' ? systemTheme : theme
   const isDark = currentTheme === 'dark'
 
-  useEffect(() => {
-    setMounted(true)
-    loadDashboardData()
-  }, [])
-
-  const loadDashboardData = async () => {
+  // Memoize loadDashboardData to avoid recreating it on every render
+  const loadDashboardData = useCallback(async () => {
     try {
+      setLoading(true)
+      
       // Try to get research results from localStorage first
       const storedResults = localStorage.getItem('research_results')
       const researchHistory = localStorage.getItem('research_history')
+      
+      console.log('📊 Loading dashboard data...', {
+        hasStoredResults: !!storedResults,
+        hasHistory: !!researchHistory
+      })
       
       let casinos: Casino[] = []
       let offers: PromotionalOffer[] = []
@@ -118,56 +124,79 @@ const DashboardStats = () => {
 
       // Load research history and accumulate ALL data from ALL sessions
       if (researchHistory) {
-        const history = JSON.parse(researchHistory)
-        researchCount = Array.isArray(history) ? history.length : 0
-        
-        console.log(`📊 Loading cumulative data from ${researchCount} research sessions`)
-        
-        // Accumulate all casinos, offers, and comparisons from history
-        if (Array.isArray(history)) {
-          // Use a Set to track unique casinos by website to avoid duplicates
-          const uniqueCasinoWebsites = new Set<string>()
+        try {
+          const history = JSON.parse(researchHistory)
+          researchCount = Array.isArray(history) ? history.length : 0
           
-          history.forEach((session: any, index: number) => {
-            // Accumulate casinos (avoid duplicates by website)
-            if (session.casinos && Array.isArray(session.casinos)) {
-              session.casinos.forEach((casino: Casino) => {
-                if (casino.website && !uniqueCasinoWebsites.has(casino.website)) {
-                  casinos.push(casino)
-                  uniqueCasinoWebsites.add(casino.website)
-                } else if (!casino.website) {
-                  // If no website, add anyway (can't dedupe)
-                  casinos.push(casino)
-                }
-              })
-            }
-            
-            // Accumulate offers
-            if (session.newOffers && Array.isArray(session.newOffers)) {
-              offers.push(...session.newOffers)
-            }
-            
-            // Accumulate comparisons
-            if (session.comparisons && Array.isArray(session.comparisons)) {
-              comparisons.push(...session.comparisons)
-            }
-          })
+          console.log(`📊 Loading cumulative data from ${researchCount} research sessions`)
           
-          console.log(`📈 Cumulative totals: ${casinos.length} unique casinos, ${offers.length} offers, ${comparisons.length} comparisons`)
+          // Accumulate all casinos, offers, and comparisons from history
+          if (Array.isArray(history)) {
+            // Use a Set to track unique casinos by website to avoid duplicates
+            const uniqueCasinoWebsites = new Set<string>()
+            
+            history.forEach((session: any, index: number) => {
+              // Accumulate casinos (avoid duplicates by website)
+              if (session.casinos && Array.isArray(session.casinos)) {
+                session.casinos.forEach((casino: Casino) => {
+                  if (casino.website && !uniqueCasinoWebsites.has(casino.website)) {
+                    casinos.push(casino)
+                    uniqueCasinoWebsites.add(casino.website)
+                  } else if (!casino.website) {
+                    // If no website, add anyway (can't dedupe)
+                    casinos.push(casino)
+                  }
+                })
+              }
+              
+              // Accumulate offers
+              if (session.newOffers && Array.isArray(session.newOffers)) {
+                offers.push(...session.newOffers)
+              }
+              
+              // Accumulate comparisons
+              if (session.comparisons && Array.isArray(session.comparisons)) {
+                comparisons.push(...session.comparisons)
+              }
+            })
+            
+            console.log(`📈 Cumulative totals: ${casinos.length} unique casinos, ${offers.length} offers, ${comparisons.length} comparisons`)
+          }
+        } catch (error) {
+          console.error('Error parsing research history:', error)
         }
       }
 
-      // Fallback to latest research results if no history
-      if (casinos.length === 0 && offers.length === 0 && storedResults) {
-        const results: ResearchResult = JSON.parse(storedResults)
-        
-        // Extract casinos from missing_casinos
-        Object.values(results.missing_casinos).forEach((stateCasinos) => {
-          casinos.push(...stateCasinos)
-        })
+      // Fallback to latest research results if no history or if history is empty
+      if ((casinos.length === 0 && offers.length === 0) && storedResults) {
+        try {
+          const results: ResearchResult = JSON.parse(storedResults)
+          
+          console.log('📊 Loading from research_results:', {
+            hasMissingCasinos: !!results.missing_casinos,
+            missingCasinosCount: Object.keys(results.missing_casinos || {}).length,
+            newOffersCount: results.new_offers?.length || 0
+          })
+          
+          // Extract casinos from missing_casinos
+          Object.values(results.missing_casinos || {}).forEach((stateCasinos) => {
+            if (Array.isArray(stateCasinos)) {
+              casinos.push(...stateCasinos)
+            }
+          })
 
-        // Use new offers
-        offers = results.new_offers || []
+          // Use new offers
+          offers = results.new_offers || []
+          
+          // Also add comparisons if available
+          if (results.offer_comparisons && Array.isArray(results.offer_comparisons)) {
+            comparisons = results.offer_comparisons
+          }
+          
+          console.log(`📈 Loaded from research_results: ${casinos.length} casinos, ${offers.length} offers`)
+        } catch (error) {
+          console.error('Error parsing research results:', error)
+        }
       }
 
       // Fallback to Xano API if no local data
@@ -189,32 +218,46 @@ const DashboardStats = () => {
       // Count by state
       casinos.forEach(casino => {
         const state = casino.state
-        if (!stateMap.has(state)) {
-          stateMap.set(state, { casinos: 0, offers: 0 })
+        if (state) {
+          if (!stateMap.has(state)) {
+            stateMap.set(state, { casinos: 0, offers: 0 })
+          }
+          stateMap.get(state)!.casinos++
         }
-        stateMap.get(state)!.casinos++
       })
 
       offers.forEach(offer => {
         const state = offer.state
-        if (!stateMap.has(state)) {
-          stateMap.set(state, { casinos: 0, offers: 0 })
-        }
-        stateMap.get(state)!.offers++
+        if (state) {
+          if (!stateMap.has(state)) {
+            stateMap.set(state, { casinos: 0, offers: 0 })
+          }
+          stateMap.get(state)!.offers++
 
-        // Count offer types
-        const title = offer.offer_title.toLowerCase()
-        if (title.includes('welcome') || title.includes('signup')) {
-          offerTypeMap.set('Welcome Bonus', (offerTypeMap.get('Welcome Bonus') || 0) + 1)
-        } else if (title.includes('no deposit') || title.includes('free')) {
-          offerTypeMap.set('No Deposit', (offerTypeMap.get('No Deposit') || 0) + 1)
-        } else if (title.includes('spin')) {
-          offerTypeMap.set('Free Spins', (offerTypeMap.get('Free Spins') || 0) + 1)
-        } else if (title.includes('reload')) {
-          offerTypeMap.set('Reload Bonus', (offerTypeMap.get('Reload Bonus') || 0) + 1)
-        } else {
-          offerTypeMap.set('Other', (offerTypeMap.get('Other') || 0) + 1)
+          // Count offer types
+          // IMPORTANT: Check more specific patterns first to avoid false matches
+          const title = (offer.offer_title || '').toLowerCase()
+          if (title.includes('free spin') || title.includes('freespin') || (title.includes('spin') && !title.includes('deposit'))) {
+            offerTypeMap.set('Free Spins', (offerTypeMap.get('Free Spins') || 0) + 1)
+          } else if (title.includes('no deposit') || title.includes('no-deposit')) {
+            offerTypeMap.set('No Deposit', (offerTypeMap.get('No Deposit') || 0) + 1)
+          } else if (title.includes('reload')) {
+            offerTypeMap.set('Reload Bonus', (offerTypeMap.get('Reload Bonus') || 0) + 1)
+          } else if (title.includes('welcome') || title.includes('signup') || title.includes('sign-up')) {
+            offerTypeMap.set('Welcome Bonus', (offerTypeMap.get('Welcome Bonus') || 0) + 1)
+          } else {
+            offerTypeMap.set('Other', (offerTypeMap.get('Other') || 0) + 1)
+          }
         }
+      })
+      
+      console.log('📊 Processed data:', {
+        totalCasinos: casinos.length,
+        totalOffers: offers.length,
+        statesCount: stateMap.size,
+        researchCount,
+        stateDataEntries: stateMap.size,
+        offerTypeEntries: offerTypeMap.size
       })
 
       // Convert to chart data
@@ -246,7 +289,61 @@ const DashboardStats = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  // Reload data when pathname changes (user navigates to dashboard/analytics)
+  useEffect(() => {
+    if (mounted && (pathname === '/' || pathname === '/analytics')) {
+      console.log('📊 Pathname changed to dashboard/analytics, reloading data...')
+      loadDashboardData()
+    }
+  }, [pathname, mounted, loadDashboardData])
+
+  useEffect(() => {
+    setMounted(true)
+    // Initialize mock data if localStorage is empty
+    initializeMockDataIfNeeded()
+    loadDashboardData()
+
+    // Listen for storage events to reload data when it changes
+    const handleStorageChange = () => {
+      console.log('📊 Storage event detected, reloading dashboard data...')
+      loadDashboardData()
+    }
+
+    // Listen for custom data availability events
+    const handleDataAvailabilityChange = () => {
+      console.log('📊 Data availability changed, reloading dashboard data...')
+      loadDashboardData()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('dataAvailabilityChanged', handleDataAvailabilityChange)
+
+    // Also reload when component becomes visible (user navigates back)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('📊 Page visible, reloading dashboard data...')
+        loadDashboardData()
+      }
+    }
+
+    // Reload when window regains focus (user navigates back to tab)
+    const handleFocus = () => {
+      console.log('📊 Window focused, reloading dashboard data...')
+      loadDashboardData()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('dataAvailabilityChanged', handleDataAvailabilityChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [loadDashboardData])
 
   const generateTrendData = (historyJson: string | null): Array<{ month: string; discoveries: number; cumulative: number }> => {
     if (!historyJson) {

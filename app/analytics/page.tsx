@@ -4,10 +4,17 @@
 
 'use client'
 
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import DashboardStats from '../_components/DashboardStats'
+import { initializeMockDataIfNeeded } from '@/lib/utils/mockDataInitializer'
 
 const AnalyticsPage = () => {
+  useEffect(() => {
+    // Initialize mock data if localStorage is empty
+    initializeMockDataIfNeeded()
+  }, [])
+
   return (
     <div className="space-y-6 md:space-y-8 min-h-full">
       <motion.div

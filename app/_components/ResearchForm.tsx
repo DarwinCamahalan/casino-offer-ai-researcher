@@ -33,6 +33,8 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
   const [includeOffers, setIncludeOffers] = useState(true)
   const [researchedCount, setResearchedCount] = useState(0)
   const [showResetModal, setShowResetModal] = useState(false)
+  const [showMockDataModal, setShowMockDataModal] = useState(false)
+  const [pendingRequest, setPendingRequest] = useState<ResearchRequest | null>(null)
 
   // Load researched casinos count on mount
   useState(() => {
@@ -103,7 +105,22 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
       include_offer_research: includeOffers,
     }
 
-    onStartResearch(request)
+    // Show mock data warning modal first
+    setPendingRequest(request)
+    setShowMockDataModal(true)
+  }
+
+  const handleProceedWithMockData = () => {
+    setShowMockDataModal(false)
+    if (pendingRequest) {
+      onStartResearch(pendingRequest)
+      setPendingRequest(null)
+    }
+  }
+
+  const handleCancelMockData = () => {
+    setShowMockDataModal(false)
+    setPendingRequest(null)
   }
 
   return (
@@ -383,6 +400,73 @@ const ResearchForm = ({ onStartResearch, isLoading }: Props) => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Mock Data Warning Modal */}
+      <Dialog open={showMockDataModal} onOpenChange={setShowMockDataModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              OpenAI API Removed - Using Mock Data
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Important information about the research process
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-foreground">
+                    OpenAI API Key Has Been Removed
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    The OpenAI API integration has been removed from this application. 
+                    When you proceed, the system will use <strong>mock data only</strong> to simulate the research process.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-foreground">
+                    What This Means:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Research results will be generated from pre-configured mock data</li>
+                    <li>No actual API calls will be made to OpenAI</li>
+                    <li>Data shown is for demonstration purposes only</li>
+                    <li>All features will work as expected with simulated data</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelMockData}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleProceedWithMockData}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              Proceed with Mock Data
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reset Confirmation Modal */}
       <Dialog open={showResetModal} onOpenChange={setShowResetModal}>

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +24,11 @@ const ResearchLoading = ({
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const [estimatedWaitSeconds, setEstimatedWaitSeconds] = useState(0)
+  const [remainingWaitSeconds, setRemainingWaitSeconds] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+  const hasStartedRef = useRef(false)
+  const initialProgressRef = useRef<number>(0)
 
   // Define all possible steps with more realistic durations
   const allSteps = [
@@ -68,20 +73,83 @@ const ResearchLoading = ({
   }, [steps])
 
   useEffect(() => {
-    let elapsed = 0
+    // Generate random initial progress between 30% and 100%
+    const randomInitialProgress = Math.floor(Math.random() * (100 - 30 + 1)) + 30
+    initialProgressRef.current = randomInitialProgress
     
-    const interval = setInterval(() => {
-      elapsed += 1
-      setElapsedTime(elapsed)
+    // Add a delay before starting the progress (1-3 seconds)
+    const delay = Math.floor(Math.random() * 2000) + 1000 // 1-3 seconds in milliseconds
+    
+    // Generate random estimated wait time (8-30 seconds)
+    const randomEstimatedSeconds = Math.floor(Math.random() * (30 - 8 + 1)) + 8
+    setEstimatedWaitSeconds(randomEstimatedSeconds)
+    setRemainingWaitSeconds(randomEstimatedSeconds)
+    
+    // Countdown timer for wait seconds
+    let countdownInterval: NodeJS.Timeout | null = null
+    
+    const startCountdown = () => {
+      countdownInterval = setInterval(() => {
+        if (!hasStartedRef.current) {
+          setRemainingWaitSeconds((prev) => {
+            if (prev <= 1) {
+              if (countdownInterval) clearInterval(countdownInterval)
+              return 0
+            }
+            return prev - 1
+          })
+        } else {
+          if (countdownInterval) clearInterval(countdownInterval)
+        }
+      }, 1000)
+    }
+    
+    startCountdown()
+    
+    const delayTimeout = setTimeout(() => {
+      hasStartedRef.current = true
+      setHasStarted(true)
+      if (countdownInterval) clearInterval(countdownInterval)
+    }, delay)
+
+    let elapsed = 0
+    let progressElapsed = 0 // Track time since progress started
+    
+    // Progress animation interval - updates more frequently for smooth animation
+    const progressInterval = setInterval(() => {
+      if (!hasStartedRef.current) {
+        return // Wait for delay to complete
+      }
+
+      progressElapsed += 0.1 // Update every 100ms for smooth animation
       
-      // Calculate progress with better handling of overruns
-      let calculatedProgress = (elapsed / totalDuration) * 100
+      // Calculate progress smoothly from 0% to initial progress, then to 100%
+      let calculatedProgress: number
+      
+      // Time to reach initial progress (smooth transition over 2-3 seconds)
+      const timeToInitialProgress = 2.5 // seconds
+      
+      if (progressElapsed < timeToInitialProgress) {
+        // Smoothly animate from 0% to initial progress
+        const progressRatio = progressElapsed / timeToInitialProgress
+        // Use easing function for smooth animation
+        const easedRatio = progressRatio < 0.5 
+          ? 2 * progressRatio * progressRatio 
+          : 1 - Math.pow(-2 * progressRatio + 2, 2) / 2
+        calculatedProgress = easedRatio * initialProgressRef.current
+      } else {
+        // After reaching initial progress, continue to 100%
+        const timeAfterInitial = progressElapsed - timeToInitialProgress
+        const remainingProgress = 100 - initialProgressRef.current
+        const progressRate = remainingProgress / (totalDuration - timeToInitialProgress)
+        calculatedProgress = initialProgressRef.current + (timeAfterInitial * progressRate)
+      }
       
       // If we've exceeded the estimated time, continue slowly
-      if (elapsed > totalDuration) {
+      if (progressElapsed > totalDuration) {
         // Continue incrementing slowly after estimated time
         // Each second after totalDuration only adds 0.1% progress
-        const overtime = elapsed - totalDuration
+        const overtime = progressElapsed - totalDuration
         calculatedProgress = 95 + Math.min(overtime * 0.1, 3) // Cap at 98%
       } else if (calculatedProgress > 85) {
         // Apply stronger easing as we approach the end
@@ -92,8 +160,19 @@ const ResearchLoading = ({
       
       const newProgress = Math.min(calculatedProgress, 98)
       setProgress(newProgress)
+    }, 100) // Update every 100ms for smooth animation
+    
+    // Main interval for elapsed time and step updates (updates every second)
+    const interval = setInterval(() => {
+      if (!hasStartedRef.current) {
+        return // Wait for delay to complete
+      }
+
+      elapsed += 1
+      setElapsedTime(elapsed)
 
       // Update current step more accurately
+      // Adjust step calculation based on elapsed time
       let cumulativeDuration = 0
       for (let i = 0; i < steps.length; i++) {
         cumulativeDuration += steps[i].duration
@@ -112,7 +191,12 @@ const ResearchLoading = ({
       // This allows progress to continue slowly if API takes longer than expected
     }, 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearTimeout(delayTimeout)
+      clearInterval(interval)
+      clearInterval(progressInterval)
+      if (countdownInterval) clearInterval(countdownInterval)
+    }
   }, [steps, totalDuration])
 
   return (
@@ -236,7 +320,9 @@ const ResearchLoading = ({
             <p className="text-muted-foreground text-xs mt-2">
               {progress < 98 ? (
                 <>
-                  {elapsedTime < totalDuration ? (
+                  {!hasStarted ? (
+                    <>Starting research in {Math.max(0, remainingWaitSeconds)}s...</>
+                  ) : elapsedTime < totalDuration ? (
                     <>Estimated time remaining: {Math.max(1, totalDuration - elapsedTime)}s</>
                   ) : (
                     <>Processing large dataset, almost complete...</>

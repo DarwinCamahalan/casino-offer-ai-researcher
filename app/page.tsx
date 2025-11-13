@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import DashboardStats from './_components/DashboardStats'
 import { Search, TrendingUp, Database, Sparkles, ArrowRight, History } from 'lucide-react'
+import { initializeMockDataIfNeeded } from '@/lib/utils/mockDataInitializer'
 
 const HomePage = () => {
   const router = useRouter()
@@ -22,6 +23,9 @@ const HomePage = () => {
     // Check if there's any data available
     const checkForData = async () => {
       setIsChecking(true)
+      
+      // Initialize mock data if localStorage is empty
+      initializeMockDataIfNeeded()
       
       try {
         const storedResults = localStorage.getItem('research_results')
